@@ -1775,7 +1775,7 @@ static irqreturn_t mshci_irq(int irq, void *dev_id)
 				& INTMSK_CDONE))
 				; /* Nothing to do */
 			if (!timeout)
-				printk(KERN_ERR"*** %s time out for	CDONE intr\n",
+				printk(KERN_ERR "*** %s time out for  CDONE intr\n",
 					mmc_hostname(host->mmc));
 			else
 				mshci_writel(host, INTMSK_CDONE,
@@ -1799,7 +1799,7 @@ static irqreturn_t mshci_irq(int irq, void *dev_id)
 				& INTMSK_DTO))
 				; /* Nothing to do */
 			if (!timeout)
-				printk(KERN_ERR"*** %s time out for	DTO intr\n",
+				printk(KERN_ERR "*** %s time out for  DTO intr\n",
 					mmc_hostname(host->mmc));
 			else
 				mshci_writel(host, INTMSK_DTO,
@@ -2040,7 +2040,14 @@ int mshci_add_host(struct mshci_host *host)
 	mmc->ops = &mshci_ops;
 	mmc->f_min = 400000;
 	mmc->f_max = host->max_clk;
-	mmc->caps |= MMC_CAP_SDIO_IRQ | MMC_CAP_ERASE;
+	/*
+	 * removed MMC_CAP_ERASE to avoid killing faulty emmc chips
+	 * yes, we're scared ;-)
+	 *
+	 * mmc->caps |= MMC_CAP_SDIO_IRQ | MMC_CAP_ERASE;
+	 *
+	 */
+	mmc->caps |= MMC_CAP_SDIO_IRQ;
 
 	mmc->caps |= MMC_CAP_4_BIT_DATA;
 
