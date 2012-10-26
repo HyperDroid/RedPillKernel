@@ -3,7 +3,7 @@ export KERNELDIR=`readlink -f .`
 export RAMFS_SOURCE=`readlink -f $KERNELDIR/../redpill_jb_ramfs_n7100`
 export PARENT_DIR=`readlink -f ..`
 export USE_SEC_FIPS_MODE=true
-CROSS_COMPILE=~/CodeSourcery/Sourcery_G++_Lite/bin/arm-none-eabi-
+export CROSS_COMPILE=~/CodeSourcery/Sourcery_G++_Lite/bin/arm-none-eabi-
 
 if [ "${1}" != "" ];then
   export KERNELDIR=`readlink -f ${1}`
@@ -50,9 +50,6 @@ cd -
 nice -n 10 make -j3 zImage || exit 1
 
 ./mkbootimg --kernel $KERNELDIR/arch/arm/boot/zImage --ramdisk $RAMFS_TMP.cpio.gz --board smdk4x12 --base 0x10000000 --pagesize 2048 --ramdiskaddr 0x11000000 -o $KERNELDIR/boot.img
-
-#$KERNELDIR/mkshbootimg.py $KERNELDIR/boot.img $KERNELDIR/boot.img.pre $KERNELDIR/payload.tar
-#rm -f $KERNELDIR/boot.img.pre
 
 TAR_NAME=$KERNELDIR/`echo $CONFIG_LOCALVERSION|cut -c 2-`.tar
 ZIP_NAME=$KERNELDIR/`echo $CONFIG_LOCALVERSION|cut -c 2-`_CWM.zip
