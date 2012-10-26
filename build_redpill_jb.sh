@@ -56,6 +56,7 @@ ZIP_NAME=$KERNELDIR/`echo $CONFIG_LOCALVERSION|cut -c 2-`_CWM.zip
 echo $TAR_NAME
 echo $ZIP_NAME
 
+cd $KERNELDIR
 tar cf $TAR_NAME boot.img && ls -lh $TAR_NAME
 cd $PARENT_DIR/Releases/CWM-RELEASE
 cp $KERNELDIR/boot.img .
@@ -63,6 +64,7 @@ rm -f $ZIP_NAME
 zip -r $ZIP_NAME *
 cd ..
 
+cp $TAR_NAME $PARENT_DIR/Releases
 cp $ZIP_NAME $PARENT_DIR/Releases
 rm -f $TAR_NAME
 rm -f $ZIP_NAME
