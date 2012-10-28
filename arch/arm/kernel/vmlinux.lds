@@ -421,7 +421,7 @@ SECTIONS
   _sinittext = .;
    *(.head.text)
    *(.init.text) *(.meminit.text)
-  
+   *(.exit.text) *(.memexit.text)
   _einittext = .;
  
   __arch_info_begin = .;
@@ -442,8 +442,8 @@ SECTIONS
   __security_initcall_start = .; *(.security_initcall.init) __security_initcall_end = .;
   . = ALIGN(4); __initramfs_start = .; *(.init.ramfs) . = ALIGN(8); *(.init.ramfs.info)
   __init_begin = _stext;
-  *(.init.data) *(.meminit.data) *(.init.rodata) . = ALIGN(8); __start_mcount_loc = .; *(__mcount_loc) __stop_mcount_loc = .; . = ALIGN(8); __start_ftrace_events = .; *(_ftrace_events) __stop_ftrace_events = .; *(.meminit.rodata) . = ALIGN(32); __dtb_start = .; *(.dtb.init.rodata) __dtb_end = .;
- 
+  *(.init.data) *(.meminit.data) *(.init.rodata) *(.meminit.rodata) . = ALIGN(32); __dtb_start = .; *(.dtb.init.rodata) __dtb_end = .;
+  *(.exit.data) *(.memexit.data) *(.memexit.rodata)
  }
  . = ALIGN((1 << 12)); .data..percpu : AT(ADDR(.data..percpu) - 0) { __per_cpu_load = .; __per_cpu_start = .; *(.data..percpu..first) . = ALIGN((1 << 12)); *(.data..percpu..page_aligned) . = ALIGN(32); *(.data..percpu..readmostly) . = ALIGN(32); *(.data..percpu) *(.data..percpu..shared_aligned) __per_cpu_end = .; }
  . = ALIGN((1 << 12));
@@ -463,7 +463,7 @@ SECTIONS
    __exception_text_start = .;
    *(.exception.text)
    __exception_text_end = .;
-   . = ALIGN(8); __irqentry_text_start = .; *(.irqentry.text) __irqentry_text_end = .;
+  
    . = ALIGN(8); *(.text.hot) *(.text) *(.ref.text) *(.devinit.text) *(.devexit.text) *(.cpuinit.text) *(.cpuexit.text) *(.text.unlikely)
    . = ALIGN(8); __sched_text_start = .; *(.sched.text) __sched_text_end = .;
    . = ALIGN(8); __lock_text_start = .; *(.spinlock.text) __lock_text_end = .;
@@ -503,7 +503,7 @@ SECTIONS
   /*
 		 * and the usual data section
 		 */
-  *(.data) *(.ref.data) *(.data..shared_aligned) *(.devinit.data) *(.devexit.data) *(.cpuinit.data) *(.cpuexit.data) . = ALIGN(32); *(__tracepoints) . = ALIGN(8); __start___jump_table = .; *(__jump_table) __stop___jump_table = .; . = ALIGN(8); __start___verbose = .; *(__verbose) __stop___verbose = .; __start___trace_bprintk_fmt = .; *(__trace_printk_fmt) __stop___trace_bprintk_fmt = .;
+  *(.data) *(.ref.data) *(.data..shared_aligned) *(.devinit.data) *(.devexit.data) *(.cpuinit.data) *(.cpuexit.data) . = ALIGN(32); *(__tracepoints) . = ALIGN(8); __start___jump_table = .; *(__jump_table) __stop___jump_table = .; . = ALIGN(8); __start___verbose = .; *(__verbose) __stop___verbose = .;
   CONSTRUCTORS
   _edata = .;
  }
