@@ -143,7 +143,7 @@ static unsigned int get_nr_run_avg(void)
  * It helps to keep variable names smaller, simpler
  */
 
-#define DEF_SAMPLING_DOWN_FACTOR		(2)
+#define DEF_SAMPLING_DOWN_FACTOR		(1)
 #define MAX_SAMPLING_DOWN_FACTOR		(100000)
 #define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(5)
 #define DEF_FREQUENCY_UP_THRESHOLD		(85)
@@ -161,7 +161,7 @@ static unsigned int get_nr_run_avg(void)
 #define DEF_UP_NR_CPUS				(1)
 #define DEF_CPU_UP_RATE				(10)
 #define DEF_CPU_DOWN_RATE			(20)
-#define DEF_FREQ_STEP				(37)
+#define DEF_FREQ_STEP				(25)
 #define DEF_START_DELAY				(0)
 
 #define UP_THRESHOLD_AT_MIN_FREQ		(40)
