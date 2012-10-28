@@ -3,13 +3,13 @@ export KERNELDIR=`readlink -f .`
 export RAMFS_SOURCE=`readlink -f $KERNELDIR/../redpill_jb_ramfs_n7100`
 export PARENT_DIR=`readlink -f ..`
 export USE_SEC_FIPS_MODE=true
-export CROSS_COMPILE=~/CodeSourcery/Sourcery_G++_Lite/bin/arm-none-eabi-
+export CROSS_COMPILE=~/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-
 
 if [ "${1}" != "" ];then
   export KERNELDIR=`readlink -f ${1}`
 fi
 
-RAMFS_TMP="/tmp/redpill_jb_ramfs_n7100"
+RAMFS_TMP="/tmp/ramdisk"
 
 if [ ! -f $KERNELDIR/.config ];
 then
@@ -39,7 +39,7 @@ rm -rf $RAMFS_TMP/.hg
 #copy modules into ramfs
 mkdir -p $RAMFS_TMP/lib/modules
 find -name '*.ko' -exec cp -av {} $RAMFS_TMP/lib/modules/ \;
-/home/sar/CodeSourcery/Sourcery_G++_Lite/bin/arm-none-eabi-strip --strip-unneeded $RAMFS_TMP/lib/modules/*
+/home/sar/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-strip --strip-unneeded $RAMFS_TMP/lib/modules/*
 
 cd $RAMFS_TMP
 find | fakeroot cpio -H newc -o > $RAMFS_TMP.cpio 2>/dev/null
@@ -47,16 +47,16 @@ ls -lh $RAMFS_TMP.cpio
 gzip -9 $RAMFS_TMP.cpio
 cd -
 
-nice -n 10 make -j3 zImage || exit 1
+nice -n 10 make -j4 zImage || exit 1
 
-./mkbootimg --kernel $KERNELDIR/arch/arm/boot/zImage --ramdisk $RAMFS_TMP.cpio.gz --board smdk4x12 --base 0x10000000 --pagesize 2048 --ramdiskaddr 0x11000000 -o $KERNELDIR/boot.img
+./mkbootimg --kernel $KERNELDIR/arch/arm/boot/zImage --ramdisk $RAMFS_TMP.cpio.gz --board smdk4x12 --base 0x10000000 --pagesize 2048 --ramdiskaddr 0x11000000 -o ./boot.img
 
 TAR_NAME=$KERNELDIR/`echo $CONFIG_LOCALVERSION|cut -c 2-`.tar
 ZIP_NAME=$KERNELDIR/`echo $CONFIG_LOCALVERSION|cut -c 2-`_CWM.zip
 echo $TAR_NAME
 echo $ZIP_NAME
 
-cd $KERNELDIR
+#cd $KERNELDIR
 tar cf $TAR_NAME boot.img && ls -lh $TAR_NAME
 cd $PARENT_DIR/Releases/CWM-RELEASE
 cp $KERNELDIR/boot.img .
