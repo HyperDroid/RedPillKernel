@@ -61,6 +61,7 @@ include/linux/version.h
 include/generated
 arch/*/include/generated
 zImage
+boot.img
 include/asm
 include/asm-arm
 include/config
