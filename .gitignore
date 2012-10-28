@@ -71,10 +71,10 @@ include/linux/version.h
 include/linux/utsrelease.h
 include/linux/bounds.h
 include/generated
-
 arch/arm/boot/Image
 arch/arm/boot/compressed/lib1funcs.S
 arch/arm/boot/compressed/piggy.gzip
+arch/arm/boot/compressed/piggy.xzkern
 arch/arm/boot/compressed/vmlinux
 arch/arm/boot/compressed/vmlinux.lds
 drivers/tty/vt/consolemap_deftbl.c
