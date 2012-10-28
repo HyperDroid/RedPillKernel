@@ -941,6 +941,13 @@ static int cpufreq_add_dev(struct sys_device *sys_dev)
 		pr_debug("initialization failed\n");
 		goto err_unlock_policy;
 	}
+
+	/* set to 1.4GHz at boot */
+	if (policy->max > 1400000) {
+		pr_info("[redpill] cpufreq policy max set to 1.4Ghz at boot");
+		policy->max = 1400000;
+	}
+
 	policy->user_policy.min = policy->min;
 	policy->user_policy.max = policy->max;
 
