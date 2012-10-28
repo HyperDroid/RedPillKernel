@@ -72,6 +72,43 @@ include/linux/utsrelease.h
 include/linux/bounds.h
 include/generated
 
+arch/arm/boot/Image
+arch/arm/boot/compressed/lib1funcs.S
+arch/arm/boot/compressed/piggy.gzip
+arch/arm/boot/compressed/vmlinux
+arch/arm/boot/compressed/vmlinux.lds
+drivers/tty/vt/consolemap_deftbl.c
+drivers/tty/vt/defkeymap.c
+firmware/SlimISP_GK.bin.gen.S
+firmware/SlimISP_ZK.bin.gen.S
+firmware/epen/W9001_B660.bin.gen.S
+firmware/epen/W9001_B713.bin.gen.S
+firmware/epen/W9001_B746.bin.gen.S
+firmware/epen/W9001_B746JD.bin.gen.S
+firmware/epen/W9001_B746K.bin.gen.S
+firmware/epen/W9001_B746L.bin.gen.S
+firmware/epen/W9001_B746S.bin.gen.S
+firmware/ssp.fw
+firmware/ssp.fw.gen.S
+firmware/ssp_crashed.fw
+firmware/ssp_crashed.fw.gen.S
+firmware/tsp_melfas/note/BOOT.fw
+firmware/tsp_melfas/note/BOOT.fw.gen.S
+firmware/tsp_melfas/note/CONFL.fw
+firmware/tsp_melfas/note/CONFL.fw.gen.S
+firmware/tsp_melfas/note/CONFM.fw
+firmware/tsp_melfas/note/CONFM.fw.gen.S
+firmware/tsp_melfas/note/CORE.fw
+firmware/tsp_melfas/note/CORE.fw.gen.S
+firmware/tsp_melfas/note/melfasl.fw
+firmware/tsp_melfas/note/melfasl.fw.gen.S
+firmware/tsp_melfas/note/melfasm.fw
+firmware/tsp_melfas/note/melfasm.fw.gen.S
+kernel/timeconst.h
+lib/crc32table.h
+lib/gen_crc32table
+usr/initramfs_data.cpio
+
 # stgit generated dirs
 patches-*
 
