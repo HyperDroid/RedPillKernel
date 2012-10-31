@@ -2,8 +2,10 @@
 export KERNELDIR=`readlink -f .`
 export RAMFS_SOURCE=`readlink -f $KERNELDIR/../redpill_jb_ramfs_n7100`
 export PARENT_DIR=`readlink -f ..`
+export CLOUD_DIR="/mnt/hgfs/HyperDroid Note2/RedPill"
 export USE_SEC_FIPS_MODE=true
 export CROSS_COMPILE=~/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-
+export STRIP=~/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-strip
 
 if [ "${1}" != "" ];then
   export KERNELDIR=`readlink -f ${1}`
@@ -39,7 +41,7 @@ rm -rf $RAMFS_TMP/.hg
 #copy modules into ramfs
 mkdir -p $RAMFS_TMP/lib/modules
 find -name '*.ko' -exec cp -av {} $RAMFS_TMP/lib/modules/ \;
-/home/sar/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-strip --strip-unneeded $RAMFS_TMP/lib/modules/*
+$STRIP --strip-unneeded $RAMFS_TMP/lib/modules/*
 
 cd $RAMFS_TMP
 find | fakeroot cpio -H newc -o > $RAMFS_TMP.cpio 2>/dev/null
@@ -66,5 +68,6 @@ cd ..
 
 cp $TAR_NAME $PARENT_DIR/Releases
 cp $ZIP_NAME $PARENT_DIR/Releases
+cp $ZIP_NAME $CLOUD_DIR
 rm -f $TAR_NAME
 rm -f $ZIP_NAME
