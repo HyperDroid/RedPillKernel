@@ -1227,7 +1227,7 @@ static void do_dbs_timer(struct work_struct *work)
 static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
 {
 	/* We want all CPUs to do sampling nearly on same jiffy (redpill) */
-	int delay = usecs_to_jiffies(DEF_START_DELAY * 100 * 1000
+	int delay = usecs_to_jiffies(DEF_START_DELAY * 1000 * 1000
 				     + dbs_tuners_ins.sampling_rate);
 	/*if (num_online_cpus() > 1)
 		delay -= jiffies % delay;*/
