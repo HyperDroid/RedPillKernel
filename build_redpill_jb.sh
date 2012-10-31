@@ -2,7 +2,7 @@
 export KERNELDIR=`readlink -f .`
 export RAMFS_SOURCE=`readlink -f $KERNELDIR/../redpill_jb_ramfs_n7100`
 export PARENT_DIR=`readlink -f ..`
-export CLOUD_DIR="/mnt/hgfs/HyperDroid\ Note2/RedPill"
+export CLOUD_DIR="/mnt/hgfs/HyperDroid\Note2/RedPill"
 export USE_SEC_FIPS_MODE=true
 export CROSS_COMPILE=~/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-
 export STRIP=~/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-strip
