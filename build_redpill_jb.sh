@@ -4,8 +4,8 @@ export RAMFS_SOURCE=`readlink -f $KERNELDIR/../redpill_jb_ramfs_n7100`
 export PARENT_DIR=`readlink -f ..`
 export CLOUD_DIR="/mnt/hgfs/HyperDroidNote2/RedPill"
 export USE_SEC_FIPS_MODE=true
-export CROSS_COMPILE=~/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-
-export STRIP=~/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-strip
+export CROSS_COMPILE=~/Android_Toolchains/Android_Toolchains/toolchain-4.6.3/bin/arm-linux-androideabi-
+export STRIP=~/Android_Toolchains/Android_Toolchains/toolchain-4.6.3/bin/arm-linux-androideabi-strip
 
 if [ "${1}" != "" ];then
   export KERNELDIR=`readlink -f ${1}`
