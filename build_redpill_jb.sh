@@ -4,8 +4,8 @@ export RAMFS_SOURCE=`readlink -f $KERNELDIR/../redpill_jb_ramfs_n7100`
 export PARENT_DIR=`readlink -f ..`
 export CLOUD_DIR="/mnt/hgfs/HyperDroidNote2/RedPill"
 export USE_SEC_FIPS_MODE=true
-export CROSS_COMPILE=~/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-
-export STRIP=~/Android_Toolchains/Android_Toolchains/arm-eabi-4.4.3/bin/arm-eabi-strip
+export CROSS_COMPILE=~/Android_Toolchains/Android_Toolchains/arm-gnueabihf-linaro-4.7/bin/arm-linux-gnueabihf-
+export STRIP=~/Android_Toolchains/Android_Toolchains/arm-gnueabihf-linaro-4.7/bin/arm-linux-gnueabihf-strip
 
 if [ "${1}" != "" ];then
   export KERNELDIR=`readlink -f ${1}`
@@ -15,7 +15,7 @@ RAMFS_TMP="/tmp/ramdisk"
 
 if [ ! -f $KERNELDIR/.config ];
 then
-  make redpill_jb_n7100_defconfig
+  make redpill_jb_n7100_defconfig_stable
 fi
 
 . $KERNELDIR/.config
