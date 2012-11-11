@@ -23,6 +23,7 @@
 #include <linux/tick.h>
 #include <linux/ktime.h>
 #include <linux/sched.h>
+#include <linux/workqueue.h>
 
 /*
  * dbs is used in this file as a shortform for demandbased switching
@@ -45,6 +46,7 @@
 #define MIN_SAMPLING_RATE_RATIO			(1)
 
 static unsigned int min_sampling_rate;
+unsigned int tick = 0;
 
 #define LATENCY_MULTIPLIER			(200)
 #define MIN_LATENCY_MULTIPLIER			(100)
@@ -319,6 +321,50 @@ static struct attribute_group dbs_attr_group = {
 
 /************************** sysfs end ************************/
 
+/* Experimental Hotplug Awareness Based on Load (Thanks to franciscofranco) */
+
+static void redpill_hotplug(struct cpu_dbs_info_s *this_dbs_info, unsigned int j, unsigned int load) {
+	struct cpufreq_policy *policy;
+	unsigned long min_cur;
+	policy = this_dbs_info->cur_policy;
+	min_cur = policy->min;
+	tick = 0;
+	
+	if (load <= 20) {
+		if (!cpu_online(1) && !cpu_online(2) && !cpu_online(3))
+			return;
+			
+		for_each_online_cpu(j) {
+			if (j > 0)
+				cpu_down(j);
+		}
+		if (min_cur < 500000)
+			policy->min = 500000;
+	}
+	if (load > 20 && load <= 40) {
+		if (!cpu_online(2))
+			cpu_up(2);
+	}
+	if (load > 40 && load <= 65) {
+		if (!cpu_online(1))
+			cpu_up(1);
+		if (!cpu_online(2))
+			cpu_up(2);
+		if (min_cur == 500000)
+			policy->min = 200000;
+	}
+	if (load > 65) {
+		if (!cpu_online(1))
+			cpu_up(1);
+		if (!cpu_online(2))
+			cpu_up(2);
+		if (!cpu_online(3))
+			cpu_up(3);
+		if (min_cur == 500000)
+			policy->min = 200000;
+	}
+}
+
 static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 {
 	unsigned int load = 0;
@@ -342,6 +388,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	 */
 
 	/* Get Absolute Load */
+	tick += HZ;
 	for_each_cpu(j, policy->cpus) {
 		struct cpu_dbs_info_s *j_dbs_info;
 		cputime64_t cur_wall_time, cur_idle_time;
@@ -383,6 +430,9 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 
 		if (load > max_load)
 			max_load = load;
+		
+		if (tick > (HZ*5))
+			redpill_hotplug(this_dbs_info, j, load);
 	}
 
 	/*
@@ -534,11 +584,8 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 			min_sampling_rate =
 				MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(1);
 			/* Bring kernel and HW constraints together */
-			min_sampling_rate = max(min_sampling_rate,
-					MIN_LATENCY_MULTIPLIER * latency);
-			dbs_tuners_ins.sampling_rate =
-				max(min_sampling_rate,
-				    latency * LATENCY_MULTIPLIER);
+			min_sampling_rate = 20000;
+			dbs_tuners_ins.sampling_rate = min_sampling_rate;
 
 			cpufreq_register_notifier(
 					&dbs_cpufreq_notifier_block,
