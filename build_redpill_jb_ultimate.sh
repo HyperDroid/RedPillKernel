@@ -15,7 +15,7 @@ RAMFS_TMP="/tmp/ramdisk"
 
 if [ ! -f $KERNELDIR/.config ];
 then
-  make redpill_jb_n7100_defconfig
+  make redpill_jb_n7100_defconfig_ultimate
 fi
 
 . $KERNELDIR/.config
