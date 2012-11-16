@@ -1799,4 +1799,3 @@ MODULE_AUTHOR("Jeongtae, Park");
 MODULE_AUTHOR("Jaeryul, Oh");
 MODULE_DESCRIPTION("FIMV MFC(Multi Function Codec) V5.x Device Driver");
 MODULE_LICENSE("GPL");
-
