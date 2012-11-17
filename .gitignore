@@ -136,13 +136,4 @@ Module.symvers
 
 /arch/arm/boot/compressed/ashldi3.S
 /arch/arm/kernel/vmlinux.lds
-/build_redpill_jb_aosp.sh
-/cm10default
-/redpill
-/redpillaosp
-/redpillultimate
 /usr/gen_init_cpio
-/build_redpill_jb_unstable_orig.sh
-/arch/arm/configs/redpill_jb_aosp_n7100_defconfig
-/redpill_jb_aosp_n7100_defconfig
-/redpillultimate-slub
