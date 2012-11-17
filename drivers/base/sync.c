@@ -589,8 +589,7 @@ int sync_fence_wait(struct sync_fence *fence, long timeout)
 						       sync_fence_check(fence),
 						       timeout);
 	} else {
-		err = wait_event_interruptible(fence->wq,
-					       sync_fence_check(fence));
+		err = wait_event_interruptible(fence->wq, fence->status != 0);
 	}
 
 	if (err < 0)
