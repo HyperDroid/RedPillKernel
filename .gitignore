@@ -134,3 +134,7 @@ _tool
 
 Module.symvers
 
+/arch/arm/boot/compressed/ashldi3.S
+/arch/arm/kernel/vmlinux.lds
+/build_redpill_jb_aosp.sh
+/usr/gen_init_cpio
