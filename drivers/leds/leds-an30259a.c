@@ -144,8 +144,10 @@ struct i2c_client *b_client;
 #ifdef SEC_LED_SPECIFIC
 extern struct class *sec_class;
 struct device *led_dev;
+int led_enable_fade;
 /*path : /sys/class/sec/led/led_pattern*/
 /*path : /sys/class/sec/led/led_blink*/
+/*path : /sys/class/sec/led/led_fade*/
 /*path : /sys/class/sec/led/led_brightness*/
 /*path : /sys/class/leds/led_r/brightness*/
 /*path : /sys/class/leds/led_g/brightness*/
@@ -428,12 +430,21 @@ static void an30259a_set_led_blink(enum an30259a_led_enum led,
 	} else
 		leds_on(led, true, true, brightness);
 
-	leds_set_slope_mode(client, led, 0, 15, 7, 0,
-				(delay_on_time + AN30259A_TIME_UNIT - 1) /
-				AN30259A_TIME_UNIT,
-				(delay_off_time + AN30259A_TIME_UNIT - 1) /
-				AN30259A_TIME_UNIT,
-				1, 1, 1, 1);
+	if (led_enable_fade == 1) {
+		leds_set_slope_mode(client, led, 0, 15, 7, 0,
+					(delay_on_time + AN30259A_TIME_UNIT - 1) /
+					AN30259A_TIME_UNIT,
+					(delay_off_time + AN30259A_TIME_UNIT - 1) /
+					AN30259A_TIME_UNIT,
+					1, 1, 1, 1);
+	} else {
+		leds_set_slope_mode(client, led, 0, 15, 15, 0,
+					(delay_on_time + AN30259A_TIME_UNIT - 1) /
+					AN30259A_TIME_UNIT,
+					(delay_off_time + AN30259A_TIME_UNIT - 1) /
+					AN30259A_TIME_UNIT,
+					0, 0, 0, 0);
+	}
 }
 
 static ssize_t store_an30259a_led_lowpower(struct device *dev,
@@ -541,6 +552,28 @@ static ssize_t store_an30259a_led_blink(struct device *dev,
 
 	printk(KERN_DEBUG "led_blink is called, Color:0x%X Brightness:%i\n",
 			led_brightness, LED_DYNAMIC_CURRENT);
+
+	return count;
+}
+
+static ssize_t store_an30259a_led_fade(struct device *dev,
+					struct device_attribute *devattr,
+					const char *buf, size_t count)
+{
+	int retval;
+	int enabled = 0;
+	struct an30259a_data *data = dev_get_drvdata(dev);
+
+	retval = sscanf(buf, "%d", &enabled);
+
+	if (retval == 0) {
+		dev_err(&data->client->dev, "fail to get led_fade value.\n");
+		return count;
+	}
+
+	led_enable_fade = enabled;
+
+	printk(KERN_DEBUG "led_fade is called\n");
 
 	return count;
 }
@@ -726,6 +759,8 @@ static DEVICE_ATTR(led_pattern, 0664, NULL, \
 					store_an30259a_led_pattern);
 static DEVICE_ATTR(led_blink, 0664, NULL, \
 					store_an30259a_led_blink);
+static DEVICE_ATTR(led_fade, 0664, NULL, \
+					store_an30259a_led_fade);
 static DEVICE_ATTR(led_br_lev, 0664, NULL, \
 					store_an30259a_led_br_lev);
 static DEVICE_ATTR(led_lowpower, 0664, NULL, \
@@ -751,6 +786,7 @@ static struct attribute *sec_led_attributes[] = {
 	&dev_attr_led_b.attr,
 	&dev_attr_led_pattern.attr,
 	&dev_attr_led_blink.attr,
+	&dev_attr_led_fade.attr,
 	&dev_attr_led_br_lev.attr,
 	&dev_attr_led_lowpower.attr,
 	NULL,
@@ -852,6 +888,8 @@ static int __devinit an30259a_probe(struct i2c_client *client,
 	}
 
 #ifdef SEC_LED_SPECIFIC
+	led_enable_fade = 1;
+	
 	led_dev = device_create(sec_class, NULL, 0, data, "led");
 	if (IS_ERR(led_dev)) {
 		dev_err(&client->dev,
@@ -880,11 +918,19 @@ static int __devexit an30259a_remove(struct i2c_client *client)
 	int i;
 	dev_dbg(&client->adapter->dev, "%s\n", __func__);
 	
-	// clear leds on shutdown
-	an30259a_set_led_blink(LED_R, 0, 0, 0);
-	an30259a_set_led_blink(LED_G, 0, 0, 0);
-	an30259a_set_led_blink(LED_B, 0, 0, 0);
-	leds_i2c_write_all(data->client);
+	// this is not an ugly hack to shutdown led.
+	data->shadow_reg[AN30259A_REG_LEDON] &= ~(LED_ON << 0);
+	data->shadow_reg[AN30259A_REG_LEDON] &= ~(LED_ON << 1);
+	data->shadow_reg[AN30259A_REG_LEDON] &= ~(LED_ON << 2);
+	data->shadow_reg[AN30259A_REG_LED1CNT2 + 0 * 4] &= ~AN30259A_MASK_DELAY;
+	data->shadow_reg[AN30259A_REG_LED1CNT2 + 1 * 4] &= ~AN30259A_MASK_DELAY;
+	data->shadow_reg[AN30259A_REG_LED1CNT2 + 2 * 4] &= ~AN30259A_MASK_DELAY;
+	data->shadow_reg[AN30259A_REG_LEDON] &= ~(LED_SLOPE_MODE << 0);
+	data->shadow_reg[AN30259A_REG_LEDON] &= ~(LED_SLOPE_MODE << 1);
+	data->shadow_reg[AN30259A_REG_LEDON] &= ~(LED_SLOPE_MODE << 2);
+	data->shadow_reg[AN30259A_REG_LED1CC + 0] = 0;
+	data->shadow_reg[AN30259A_REG_LED1CC + 1] = 0;
+	data->shadow_reg[AN30259A_REG_LED1CC + 2] = 0;
 	msleep(200);
 	
 #ifdef SEC_LED_SPECIFIC
@@ -896,6 +942,7 @@ static int __devexit an30259a_remove(struct i2c_client *client)
 		led_classdev_unregister(&data->leds[i].cdev);
 		cancel_work_sync(&data->leds[i].brightness_work);
 	}
+	
 	mutex_destroy(&data->mutex);
 	kfree(data);
 	return 0;
