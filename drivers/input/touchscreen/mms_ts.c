@@ -55,6 +55,8 @@
 #endif
 
 #define MAX_FINGERS		10
+#include "../keyboard/cypress/cypress-touchkey.h"
+
 #define MAX_WIDTH		30
 #define MAX_PRESSURE		255
 #define MAX_ANGLE		90
@@ -905,6 +907,10 @@ static int mms100_seek_section_info(void)
 			} while (!strstr(str_buf, "SECTION_NAME"));
 
 			sscanf(buf + next_ptr, "%s%s", str_buf, name_buf);
+                
+                // report state to cypress-touchkey for backlight timeout
+                touchscreen_state_report(0);
+
 
 			if (strncmp(section_name[i], name_buf,
 				SECTION_NAME_LEN))
@@ -950,6 +956,10 @@ static int mms100_seek_section_info(void)
 
 			if (mbin_info[i].version == 0xFF)
 				return ISC_FILE_FORMAT_ERROR;
+
+            // report state to cypress-touchkey for backlight timeout
+            touchscreen_state_report(1);
+
 		}
 	}
 
