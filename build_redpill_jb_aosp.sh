@@ -40,6 +40,7 @@ rm -rf $RAMFS_TMP/tmp/*
 rm -rf $RAMFS_TMP/.hg
 #copy modules into ramfs
 mkdir -p $RAMFS_TMP/lib/modules
+mv -f drivers/net/wireless/bcmdhd.cm/dhd.ko drivers/net/wireless/bcmdhd.cm/dhd_cm.ko
 find -name '*.ko' -exec cp -av {} $RAMFS_TMP/lib/modules/ \;
 $STRIP --strip-unneeded $RAMFS_TMP/lib/modules/*
 
