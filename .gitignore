@@ -146,3 +146,4 @@ Module.symvers
 /arch/arm/configs/redpill_jb_aosp_n7100_defconfig
 /redpill_jb_aosp_n7100_defconfig
 /redpillultimate-slub
+/firmware/.gitignore
