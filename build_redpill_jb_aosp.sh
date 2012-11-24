@@ -40,9 +40,11 @@ rm -rf $RAMFS_TMP/tmp/*
 rm -rf $RAMFS_TMP/.hg
 #copy modules into ramfs
 mkdir -p $RAMFS_TMP/lib/modules
-mv -f drivers/net/wireless/bcmdhd.cm/dhd.ko drivers/net/wireless/bcmdhd.cm/dhd_cm.ko
+#mv -f drivers/net/wireless/bcmdhd.cm/dhd.ko drivers/net/wireless/bcmdhd.cm/dhd_cm.ko
 find -name '*.ko' -exec cp -av {} $RAMFS_TMP/lib/modules/ \;
 $STRIP --strip-unneeded $RAMFS_TMP/lib/modules/*
+mkdir -p $RAMFS_TMP/vendor/firmware
+find -name 'SlimISP_*.bin' -exec cp -av {} $RAMFS_TMP/vendor/firmware \;
 
 cd $RAMFS_TMP
 find | fakeroot cpio -H newc -o > $RAMFS_TMP.cpio 2>/dev/null
