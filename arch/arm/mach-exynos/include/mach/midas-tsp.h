@@ -27,7 +27,7 @@ int melfas_mux_fw_flash(bool to_gpios);
 void midas_tsp_set_lcdtype(int lcd_type);
 
 #ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_FLEXRATE
-extern void midas_tsp_request_qos(void);
+extern void midas_tsp_request_qos(void *data);
 #else
 #define midas_tsp_request_qos	NULL
 #endif
