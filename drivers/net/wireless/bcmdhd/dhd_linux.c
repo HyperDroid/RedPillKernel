@@ -3933,6 +3933,9 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	dhd->pktfilter_count = 2;
 	dhd->pktfilter[1] = "104 0 0 0 0xFFFFFF 0x01005E";
 #endif
+#ifdef PASS_ARP_PACKET
+	dhd->pktfilter[dhd->pktfilter_count++] = "105 0 0 12 0xFFFF 0x0806";
+#endif
 #endif /* CUSTOMER_HW4 */
 
 #if defined(SOFTAP)
