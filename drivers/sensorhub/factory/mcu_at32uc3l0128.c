@@ -44,10 +44,9 @@ ssize_t mcu_update_show(struct device *dev,
 
 	ssp_dbg("[SSP]: %s - mcu binany update!\n", __func__);
 
-	if (data->bSspShutdown == false) {
+	if (data->bBinaryChashed == false) {
 		disable_irq(data->iIrq);
 		disable_irq_wake(data->iIrq);
-		data->bSspShutdown = true;
 	}
 
 	iRet = update_mcu_bin(data);
@@ -85,10 +84,9 @@ ssize_t mcu_update2_show(struct device *dev,
 
 	ssp_dbg("[SSP]: %s - mcu binany update!\n", __func__);
 
-	if (data->bSspShutdown == false) {
+	if (data->bBinaryChashed == false) {
 		disable_irq(data->iIrq);
 		disable_irq_wake(data->iIrq);
-		data->bSspShutdown = true;
 	}
 
 	iRet = update_crashed_mcu_bin(data);
@@ -161,7 +159,7 @@ ssize_t mcu_factorytest_show(struct device *dev,
 	bool bMcuTestSuccessed = false;
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	if (data->bSspShutdown == true) {
+	if (data->bBinaryChashed == true) {
 		ssp_dbg("[SSP]: %s - MCU Bin is crashed\n", __func__);
 		return sprintf(buf, "NG,NG,NG\n");
 	}

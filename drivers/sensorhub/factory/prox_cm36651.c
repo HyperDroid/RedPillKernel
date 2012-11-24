@@ -26,13 +26,6 @@
 #define LDI_OTHERS	'0'
 #define LDI_GRAY	'1'
 #define LDI_WHITE	'2'
-
-#define CANCELATION_THRESHOLD		9
-#define DEFAULT_THRESHOLD		13
-#define OTHERS_OCTA_DEFAULT_THRESHOLD	14
-#define WHITE_OCTA_DEFAULT_THRESHOLD	13
-#define GRAY_OCTA_DEFAULT_THRESHOLD	12
-
 /*************************************************************************/
 /* factory Sysfs                                                         */
 /*************************************************************************/
@@ -114,16 +107,16 @@ static void change_proximity_default_threshold(struct ssp_data *data)
 {
 	switch (data->chLcdLdi[1]) {
 	case LDI_GRAY:
-		data->uProxHiThresh = GRAY_OCTA_DEFAULT_THRESHOLD;
+		data->uProxThresh = GRAY_OCTA_DEFAULT_THRESHOLD;
 		break;
 	case LDI_WHITE:
-		data->uProxHiThresh = WHITE_OCTA_DEFAULT_THRESHOLD;
+		data->uProxThresh = WHITE_OCTA_DEFAULT_THRESHOLD;
 		break;
 	case LDI_OTHERS:
-		data->uProxHiThresh = OTHERS_OCTA_DEFAULT_THRESHOLD;
+		data->uProxThresh = OTHERS_OCTA_DEFAULT_THRESHOLD;
 		break;
 	default:
-		data->uProxHiThresh = DEFAULT_THRESHOLD;
+		data->uProxThresh = DEFAULT_THRESHOLD;
 		break;
 	}
 }
@@ -193,17 +186,17 @@ int proximity_open_calibration(struct ssp_data *data)
 		iRet = -EIO;
 	}
 
-	if (data->uProxCanc != 0) /* If there is an offset cal data. */
-		data->uProxHiThresh = CANCELATION_THRESHOLD;
+	if (data->uProxCanc != 0) /*If there is an offset cal data. */
+		data->uProxThresh = CANCELATION_THRESHOLD;
 
 	pr_info("%s: proximity ps_canc = %d, ps_thresh = %d\n",
-		__func__, data->uProxCanc, data->uProxHiThresh);
+		__func__, data->uProxCanc, data->uProxThresh);
 
 	filp_close(cancel_filp, current->files);
 	set_fs(old_fs);
 
 exit:
-	set_proximity_threshold(data, data->uProxHiThresh, data->uProxCanc);
+	set_proximity_threshold(data);
 
 	return iRet;
 }
@@ -215,14 +208,14 @@ static int proximity_store_cancelation(struct ssp_data *data, int iCalCMD)
 	struct file *cancel_filp = NULL;
 
 	if (iCalCMD) {
-		data->uProxHiThresh = CANCELATION_THRESHOLD;
+		data->uProxThresh = CANCELATION_THRESHOLD;
 		data->uProxCanc = get_proximity_rawdata(data);
 	} else {
 		change_proximity_default_threshold(data);
 		data->uProxCanc = 0;
 	}
 
-	set_proximity_threshold(data, data->uProxHiThresh, data->uProxCanc);
+	set_proximity_threshold(data);
 
 	old_fs = get_fs();
 	set_fs(KERNEL_DS);
@@ -255,9 +248,9 @@ static ssize_t proximity_cancel_show(struct device *dev,
 	struct ssp_data *data = dev_get_drvdata(dev);
 
 	ssp_dbg("[SSP]: uProxThresh = %u, uProxCanc = %u\n",
-		data->uProxHiThresh, data->uProxCanc);
+		data->uProxThresh, data->uProxCanc);
 
-	return sprintf(buf, "%u,%u\n", data->uProxCanc, data->uProxHiThresh);
+	return sprintf(buf, "%u,%u\n", data->uProxCanc, data->uProxThresh);
 }
 
 static ssize_t proximity_cancel_store(struct device *dev,
@@ -291,9 +284,9 @@ static ssize_t proximity_thresh_show(struct device *dev,
 {
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	ssp_dbg("[SSP]: uProxThresh = %u\n", data->uProxHiThresh);
+	ssp_dbg("[SSP]: uProxThresh = %u\n", data->uProxThresh);
 
-	return sprintf(buf, "%u\n", data->uProxHiThresh);
+	return sprintf(buf, "%u\n", data->uProxThresh);
 }
 
 static ssize_t proximity_thresh_store(struct device *dev,
@@ -307,11 +300,11 @@ static ssize_t proximity_thresh_store(struct device *dev,
 	if (iRet < 0)
 		pr_err("[SSP]: %s - kstrtoint failed.", __func__);
 
-	data->uProxHiThresh = uNewThresh;
-	set_proximity_threshold(data, data->uProxHiThresh, data->uProxCanc);
+	data->uProxThresh = uNewThresh;
+	set_proximity_threshold(data);
 
 	ssp_dbg("[SSP]: %s - new prox threshold = 0x%x\n",
-		__func__, data->uProxHiThresh);
+		__func__, data->uProxThresh);
 
 	return size;
 }
@@ -368,11 +361,7 @@ static struct device_attribute *prox_attrs[] = {
 
 void initialize_prox_factorytest(struct ssp_data *data)
 {
-	sensors_register(data->prox_device, data,
-		prox_attrs, "proximity_sensor");
-}
+	struct device *prox_device = NULL;
 
-void remove_prox_factorytest(struct ssp_data *data)
-{
-	sensors_unregister(data->prox_device, prox_attrs);
+	sensors_register(prox_device, data, prox_attrs, "proximity_sensor");
 }

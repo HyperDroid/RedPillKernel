@@ -131,9 +131,6 @@ static ssize_t gyro_get_temp(struct device *dev,
 	int iDelayCnt = 0, iRet = 0;
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	if (!(data->uSensorState & (1 << GYROSCOPE_SENSOR)))
-		goto exit;
-
 	data->uFactorydataReady = 0;
 	memset(data->uFactorydata, 0, sizeof(char) * FACTORY_DATA_MAX);
 
@@ -237,9 +234,6 @@ static ssize_t gyro_selftest_dps_store(struct device *dev,
 
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	if (!(data->uSensorState & (1 << GYROSCOPE_SENSOR)))
-		goto exit;
-
 	sscanf(buf, "%d", &iNewDps);
 
 	if (iNewDps == GYROSCOPE_DPS250)
@@ -312,10 +306,7 @@ static struct device_attribute *gyro_attrs[] = {
 
 void initialize_gyro_factorytest(struct ssp_data *data)
 {
-	sensors_register(data->gyro_device, data, gyro_attrs, "gyro_sensor");
-}
+	struct device *gyro_device = NULL;
 
-void remove_gyro_factorytest(struct ssp_data *data)
-{
-	sensors_unregister(data->gyro_device, gyro_attrs);
+	sensors_register(gyro_device, data, gyro_attrs, "gyro_sensor");
 }

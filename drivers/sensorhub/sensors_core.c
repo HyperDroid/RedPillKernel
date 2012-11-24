@@ -55,24 +55,11 @@ int sensors_register(struct device *dev, void * drvdata,
 }
 EXPORT_SYMBOL_GPL(sensors_register);
 
-void sensors_unregister(struct device *dev,
-	struct device_attribute *attributes[])
+void sensors_unregister(struct device *dev)
 {
-	int i;
-
-	for (i = 0; attributes[i] != NULL; i++)
-		device_remove_file(dev, attributes[i]);
+	/* TODO : Unregister device */
 }
 EXPORT_SYMBOL_GPL(sensors_unregister);
-
-void destroy_sensor_class(void)
-{
-	if (sensors_class) {
-		class_destroy(sensors_class);
-		sensors_class = NULL;
-	}
-}
-EXPORT_SYMBOL_GPL(destroy_sensor_class);
 
 static int __init sensors_class_init(void)
 {
@@ -90,10 +77,7 @@ static int __init sensors_class_init(void)
 
 static void __exit sensors_class_exit(void)
 {
-	if (sensors_class) {
-		class_destroy(sensors_class);
-		sensors_class = NULL;
-	}
+	class_destroy(sensors_class);
 }
 
 /* exported for the APM Power driver, APM emulation */
