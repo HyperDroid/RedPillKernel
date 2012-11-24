@@ -42,6 +42,7 @@ rm -rf $RAMFS_TMP/.hg
 mkdir -p $RAMFS_TMP/lib/modules
 #mv -f drivers/net/wireless/bcmdhd.cm/dhd.ko drivers/net/wireless/bcmdhd.cm/dhd_cm.ko
 find -name '*.ko' -exec cp -av {} $RAMFS_TMP/lib/modules/ \;
+rm -f $RAMFS_TMP/lib/modules/*km.ko
 $STRIP --strip-unneeded $RAMFS_TMP/lib/modules/*
 mkdir -p $RAMFS_TMP/vendor/firmware
 find -name 'SlimISP_*.bin' -exec cp -av {} $RAMFS_TMP/vendor/firmware \;
