@@ -42,6 +42,7 @@ rm -rf $RAMFS_TMP/.hg
 mkdir -p $RAMFS_TMP/lib/modules
 find -name '*.ko' -exec cp -av {} $RAMFS_TMP/lib/modules/ \;
 rm -f $RAMFS_TMP/lib/modules/exfat*.ko
+rm -f $RAMFS_TMP/lib/modules/*km.ko
 $STRIP --strip-unneeded $RAMFS_TMP/lib/modules/*
 
 cd $RAMFS_TMP
