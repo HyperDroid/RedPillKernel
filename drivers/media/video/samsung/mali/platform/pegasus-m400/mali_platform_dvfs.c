@@ -348,6 +348,7 @@ static mali_bool set_mali_dvfs_status(u32 step,mali_bool boostup)
 	/*for future use*/
 	maliDvfsStatus.pCurrentDvfs = &mali_dvfs[validatedStep];
 
+#if CPUFREQ_LOCK_DURING_440
 	/* lock/unlock CPU freq by Mali */
 	if (mali_dvfs[step].clock >= 533)
 		err = cpufreq_lock_by_mali(1400);
@@ -355,6 +356,7 @@ static mali_bool set_mali_dvfs_status(u32 step,mali_bool boostup)
 		err = cpufreq_lock_by_mali(1200);
 	else
 		cpufreq_unlock_by_mali();
+#endif
 
 	return MALI_TRUE;
 }
@@ -783,6 +785,7 @@ int change_dvfs_tableset(int change_clk, int change_step)
 		/*change the clock*/
 		mali_clk_set_rate(mali_dvfs[change_step].clock, mali_dvfs[change_step].freq);
 
+#if CPUFREQ_LOCK_DURING_440
 		/* lock/unlock CPU freq by Mali */
 		if (mali_dvfs[change_step].clock >= 533)
 			err = cpufreq_lock_by_mali(1400);
@@ -790,6 +793,7 @@ int change_dvfs_tableset(int change_clk, int change_step)
 			err = cpufreq_lock_by_mali(1200);
 		else
 			cpufreq_unlock_by_mali();
+#endif
 	}
 
 	return mali_dvfs[change_step].clock;
