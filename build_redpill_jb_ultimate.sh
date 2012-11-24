@@ -44,8 +44,8 @@ find -name '*.ko' -exec cp -av {} $RAMFS_TMP/lib/modules/ \;
 rm -f $RAMFS_TMP/lib/modules/exfat*.ko
 rm -f $RAMFS_TMP/lib/modules/*km.ko
 $STRIP --strip-unneeded $RAMFS_TMP/lib/modules/*
-mkdir -p $RAMFS_TMP/vendor/firmware
-find -name 'SlimISP_*.bin' -exec cp -av {} $RAMFS_TMP/vendor/firmware \;
+#mkdir -p $RAMFS_TMP/vendor/firmware
+#find -name 'SlimISP_*.bin' -exec cp -av {} $RAMFS_TMP/vendor/firmware \;
 
 cd $RAMFS_TMP
 find | fakeroot cpio -H newc -o > $RAMFS_TMP.cpio 2>/dev/null
