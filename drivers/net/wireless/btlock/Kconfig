@@ -1,4 +1,4 @@
-config BCM4334
+config BCM4334_CM
 	tristate "Bluetooth Lock driver"
 	default m
 	help
