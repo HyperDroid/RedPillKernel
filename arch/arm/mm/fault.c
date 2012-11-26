@@ -185,7 +185,7 @@ __do_kernel_fault_safe(struct mm_struct *mm, unsigned long addr,
 
 	__show_regs(regs);
 
-	sec_debug_panic_handler_safe(buf);
+	// sec_debug_panic_handler_safe(buf);
 }
 #endif
 

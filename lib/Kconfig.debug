@@ -296,7 +296,7 @@ config BOOTPARAM_HUNG_TASK_PANIC_VALUE
 
 config SCHED_DEBUG
 	bool "Collect scheduler debugging info"
-	depends on DEBUG_KERNEL && PROC_FS
+	depends on PROC_FS
 	default y
 	help
 	  If you say Y here, the /proc/sched_debug file will be provided
@@ -305,7 +305,7 @@ config SCHED_DEBUG
 
 config SCHEDSTATS
 	bool "Collect scheduler statistics"
-	depends on DEBUG_KERNEL && PROC_FS
+	depends on PROC_FS
 	help
 	  If you say Y here, additional code will be inserted into the
 	  scheduler and related routines to collect statistics about
@@ -706,7 +706,7 @@ config DEBUG_LOCKING_API_SELFTESTS
 config STACKTRACE
 	bool "Stacktrace"
 	depends on STACKTRACE_SUPPORT
-	default y
+	default n
 
 config DEBUG_STACK_USAGE
 	bool "Stack utilization instrumentation"
@@ -736,7 +736,7 @@ config DEBUG_BUGVERBOSE
 	depends on BUG
 	depends on ARM || AVR32 || M32R || M68K || SPARC32 || SPARC64 || \
 		   FRV || SUPERH || GENERIC_BUG || BLACKFIN || MN10300 || TILE
-	default y
+	default n
 	help
 	  Say Y here to make BUG() panics output the file name and line number
 	  of the BUG call as well as the EIP and oops trace.  This aids

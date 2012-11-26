@@ -229,10 +229,10 @@ int subsystem_restart(const char *subsys_name)
 	subsys->ongoing = true;
 
 	/* check debug level */
-	if (!sec_debug_level.uint_val) {
-		/* debug level is low, set mdm_dump to Zero */
-		mdm_dump = 0;
-	}
+	// if (!sec_debug_level.uint_val) {
+	//	/* debug level is low, set mdm_dump to Zero */
+	//	mdm_dump = 0;
+	//}
 
 	data = kzalloc(sizeof(struct restart_wq_data), GFP_KERNEL);
 	if (!data) {
