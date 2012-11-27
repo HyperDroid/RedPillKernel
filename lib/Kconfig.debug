@@ -296,7 +296,6 @@ config BOOTPARAM_HUNG_TASK_PANIC_VALUE
 
 config SCHED_DEBUG
 	bool "Collect scheduler debugging info"
-	depends on PROC_FS
 	default y
 	help
 	  If you say Y here, the /proc/sched_debug file will be provided
@@ -305,7 +304,6 @@ config SCHED_DEBUG
 
 config SCHEDSTATS
 	bool "Collect scheduler statistics"
-	depends on PROC_FS
 	help
 	  If you say Y here, additional code will be inserted into the
 	  scheduler and related routines to collect statistics about
