@@ -381,6 +381,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
 		   -fipa-cp-clone \
 		   -Wno-array-bounds \
+		   -mno-unaligned-access \
 		   -fno-delete-null-pointer-checks
 
 KBUILD_AFLAGS_KERNEL :=
