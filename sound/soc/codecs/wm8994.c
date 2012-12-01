@@ -196,6 +196,10 @@ static int wm8994_volatile(struct snd_soc_codec *codec, unsigned int reg)
 	}
 }
 
+#ifdef CONFIG_SND_VOODOO
+#include "wm8994_voodoo.h"
+#endif
+
 static int wm8994_write(struct snd_soc_codec *codec, unsigned int reg,
 	unsigned int value)
 {
