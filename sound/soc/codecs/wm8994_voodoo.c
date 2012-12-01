@@ -30,10 +30,10 @@ static unsigned int wm8994_read(struct snd_soc_codec *codec,
 #include "wm8994.h"
 #endif
 #else
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35) && !defined(GALAXY_TAB)
-#include "../wm8994_samsung.h"
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35) && !defined(GALAXY_TAB) && !defined(GALAXY_S3)
+#include "wm8994_samsung.h"
 #else
-#include "../wm8994.h"
+#include "wm8994.h"
 #endif
 #endif
 
@@ -134,6 +134,7 @@ static ssize_t name##_store(struct device *dev, struct device_attribute *attr, \
 		if (debug_log(LOG_INFOS))				       \
 			printk("Voodoo sound: %s: %u\n", #updater, state);     \
 		updater(with_mute);					       \
+#ifndef MODULE
 	}								       \
 	return size;							       \
 }
@@ -213,6 +214,7 @@ void write_hpvol(unsigned short l, unsigned short r)
 	val |= WM8994_HPOUT1L_ZC;
 	wm8994_write(codec, WM8994_RIGHT_OUTPUT_VOLUME, val);
 }
+#endif
 
 void update_hpvol(bool with_fade)
 {
