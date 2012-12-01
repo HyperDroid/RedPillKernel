@@ -122,7 +122,7 @@ static struct snd_soc_codec *codec;
 #define DEACTIVE		0x00
 #define PLAYBACK_ACTIVE		0x01
 #define CAPTURE_ACTIVE		0x02
-#define CALL_ACTIVE		0x04
+#define CALL_ACTIVE		0
 
 #define PCM_STREAM_DEACTIVE	0x00
 #define PCM_STREAM_PLAYBACK	0x01
@@ -136,9 +136,8 @@ static short speaker_offset = 0;
 static inline int detect_headphone(void)
 {
 	struct wm8994_priv *wm8994 = snd_soc_codec_get_drvdata(codec);
-	if( wm8994->micdet[0].jack == NULL ) return 0;
-	return (wm8994->micdet[0].jack->status & SND_JACK_HEADPHONE) ||
-		(wm8994->micdet[0].jack->status & SND_JACK_HEADSET);
+	if(!wm8994->micdet[0].jack) return 0;
+	return ((wm8994->micdet[0].jack->status & SND_JACK_HEADPHONE) || (wm8994->micdet[0].jack->status & SND_JACK_HEADSET));
 }
 #endif
 static int wm8994_write(struct snd_soc_codec *codec, unsigned int reg,
