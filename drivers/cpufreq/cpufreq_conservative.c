@@ -330,7 +330,7 @@ static void redpill_hotplug(struct cpu_dbs_info_s *this_dbs_info, unsigned int j
 	min_cur = policy->min;
 	tick = 0;
 	
-	if (load <= 40) {
+	if (load <= 60) {
 		if (!cpu_online(1) && !cpu_online(2) && !cpu_online(3))
 			return;
 			
@@ -341,11 +341,11 @@ static void redpill_hotplug(struct cpu_dbs_info_s *this_dbs_info, unsigned int j
 		if (min_cur == 200000)
 			policy->min = 200000;
 	}
-	if (load > 40 && load <= 65) {
+	if (load > 60 && load <= 75) {
 		if (!cpu_online(2))
 			cpu_up(2);
 	}
-	if (load > 65 && load <= 85) {
+	if (load > 75 && load <= 90) {
 		if (!cpu_online(1))
 			cpu_up(1);
 		if (!cpu_online(2))
@@ -353,7 +353,7 @@ static void redpill_hotplug(struct cpu_dbs_info_s *this_dbs_info, unsigned int j
 		if (min_cur == 500000)
 			policy->min = 200000;
 	}
-	if (load > 85) {
+	if (load > 90) {
 		if (!cpu_online(1))
 			cpu_up(1);
 		if (!cpu_online(2))
