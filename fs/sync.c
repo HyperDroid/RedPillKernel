@@ -256,16 +256,16 @@ static int do_fsync(unsigned int fd, int datasync)
 
 SYSCALL_DEFINE1(fsync, unsigned int, fd)
 {
-#ifdef CONFIG_FSYNC_CONTROL
-	if (!fsynccontrol_fsync_enabled())
-	    return 0;
-#endif
-
 #ifdef CONFIG_DYNAMIC_FSYNC
 	if (!early_suspend_active)
 		return 0;
 	else
 #endif
+#ifdef CONFIG_FSYNC_CONTROL
+	if (!fsynccontrol_fsync_enabled())
+	    return 0;
+#endif
+
 	return do_fsync(fd, 0);
 }
 
