@@ -71,3 +71,4 @@ cp $ZIP_NAME $PARENT_DIR/Releases
 cp $ZIP_NAME $CLOUD_DIR
 rm -f $TAR_NAME
 rm -f $ZIP_NAME
+rm -f $KERNELDIR/boot.img
