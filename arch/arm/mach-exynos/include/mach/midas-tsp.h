@@ -14,7 +14,11 @@
 #if defined(CONFIG_TOUCHSCREEN_MELFAS)
 #include <linux/platform_data/mms_ts.h>
 #else
+#if defined(CONFIG_TOUCHSCREEN_MELFAS_NOTE)
+#include <linux/platform_data/mms152_ts.h>
+#else
 #include <linux/melfas_ts.h>
+#endif
 #endif
 
 extern int melfas_power(int on);
