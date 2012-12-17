@@ -1,17 +1,19 @@
 #!/bin/sh
-export KERNELDIR=`readlink -f .`
-export RAMFS_SOURCE=`readlink -f $KERNELDIR/../cm10_ramfs`
-export PARENT_DIR=`readlink -f ..`
-export CLOUD_DIR="/mnt/hgfs/HyperDroidNote2/RedPill"
+export KERNELDIR="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100/redpill_jb_kernel_n7100"
+export RAMFS_SOURCE="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100/cm10_ramfs"
+export PARENT_DIR="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100"
+export CLOUD_DIR="/Users/sarcastillo/Dropbox/HyperDroidNote2/RedPill"
 export USE_SEC_FIPS_MODE=true
-export CROSS_COMPILE=~/Android_Toolchains/Android_Toolchains/arm-eabi-linaro-4.7/bin/arm-linux-gnueabihf-
-export STRIP=~/Android_Toolchains/Android_Toolchains/arm-eabi-linaro-4.7/bin/arm-linux-gnueabihf-strip
+export CROSS_COMPILE=/Volumes/HyperDroidModWorkspace/HyperDroid/prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-
+export STRIP=/Volumes/HyperDroidModWorkspace/HyperDroid/prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-strip
+export USE_CCACHE=1
+export CCACHE_DIR=/Volumes/HyperDroidModWorkspace/tmp/.ccache
 
 if [ "${1}" != "" ];then
   export KERNELDIR=`readlink -f ${1}`
 fi
 
-RAMFS_TMP="/tmp/ramdisk"
+RAMFS_TMP="/Volumes/HyperDroidModWorkspace/tmp/ramdisk"
 
 if [ ! -f $KERNELDIR/.config ];
 then
@@ -40,15 +42,14 @@ rm -rf $RAMFS_TMP/tmp/*
 rm -rf $RAMFS_TMP/.hg
 #copy modules into ramfs
 mkdir -p $RAMFS_TMP/lib/modules
-#mv -f drivers/net/wireless/bcmdhd.cm/dhd.ko drivers/net/wireless/bcmdhd.cm/dhd_cm.ko
 find -name '*.ko' -exec cp -av {} $RAMFS_TMP/lib/modules/ \;
-rm -f $RAMFS_TMP/lib/modules/*km.ko
 $STRIP --strip-unneeded $RAMFS_TMP/lib/modules/*
-#mkdir -p $RAMFS_TMP/vendor/firmware
-#find -name 'SlimISP_*.bin' -exec cp -av {} $RAMFS_TMP/vendor/firmware \;
 
 cd $RAMFS_TMP
-find | fakeroot cpio -H newc -o > $RAMFS_TMP.cpio 2>/dev/null
+#remove mac stuff
+find $RAMFS_TMP -name .DS_Store -exec rm -f {} \;
+#build cpio
+find | cpio -H newc -o > $RAMFS_TMP.cpio 2>/dev/null
 ls -lh $RAMFS_TMP.cpio
 gzip -9 $RAMFS_TMP.cpio
 cd -
@@ -75,3 +76,4 @@ cp $ZIP_NAME $PARENT_DIR/Releases
 cp $ZIP_NAME $CLOUD_DIR
 rm -f $TAR_NAME
 rm -f $ZIP_NAME
+rm -f $KERNELDIR/boot.img
