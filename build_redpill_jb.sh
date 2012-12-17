@@ -4,8 +4,10 @@ export RAMFS_SOURCE="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N
 export PARENT_DIR="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100"
 export CLOUD_DIR="/Users/sarcastillo/Dropbox/HyperDroidNote2/RedPill"
 export USE_SEC_FIPS_MODE=true
-export CROSS_COMPILE=/Volumes/HyperDroidModWorkspace/RedPill/Toolchains/toolchain-4.6.3/bin/arm-linux-androideabi-
-export STRIP=/Volumes/HyperDroidModWorkspace/RedPill/Toolchains/toolchain-4.6.3/bin/arm-linux-androideabi-strip
+export CROSS_COMPILE=/Volumes/HyperDroidModWorkspace/HyperDroid/prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-
+export STRIP=/Volumes/HyperDroidModWorkspace/HyperDroid/prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-strip
+export USE_CCACHE=1
+export CCACHE_DIR=/Volumes/HyperDroidModWorkspace/tmp/.ccache
 
 if [ "${1}" != "" ];then
   export KERNELDIR=`readlink -f ${1}`
@@ -30,7 +32,7 @@ rm -rf $RAMFS_TMP
 rm -rf $RAMFS_TMP.cpio
 rm -rf $RAMFS_TMP.cpio.gz
 #copy ramfs files to tmp directory
-cp -ax $RAMFS_SOURCE $RAMFS_TMP
+cp -aX $RAMFS_SOURCE $RAMFS_TMP
 #clear git repositories in ramfs
 find $RAMFS_TMP -name .git -exec rm -rf {} \;
 #remove empty directory placeholders
@@ -44,7 +46,10 @@ find -name '*.ko' -exec cp -av {} $RAMFS_TMP/lib/modules/ \;
 $STRIP --strip-unneeded $RAMFS_TMP/lib/modules/*
 
 cd $RAMFS_TMP
-find | fakeroot cpio -H newc -o > $RAMFS_TMP.cpio 2>/dev/null
+#remove mac stuff
+find $RAMFS_TMP -name .DS_Store -exec rm -f {} \;
+#build cpio
+find | cpio -H newc -o > $RAMFS_TMP.cpio 2>/dev/null
 ls -lh $RAMFS_TMP.cpio
 gzip -9 $RAMFS_TMP.cpio
 cd -
