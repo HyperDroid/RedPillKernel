@@ -1,17 +1,17 @@
 #!/bin/sh
-export KERNELDIR=`readlink -f .`
-export RAMFS_SOURCE=`readlink -f $KERNELDIR/../redpill_jb_ramfs_n7100`
-export PARENT_DIR=`readlink -f ..`
-export CLOUD_DIR="/mnt/hgfs/HyperDroidNote2/RedPill"
+export KERNELDIR="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100/redpill_jb_kernel_n7100"
+export RAMFS_SOURCE="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100/redpill_jb_ramfs_n7100"
+export PARENT_DIR="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100"
+export CLOUD_DIR="/Users/sarcastillo/Dropbox/HyperDroidNote2/RedPill"
 export USE_SEC_FIPS_MODE=true
-export CROSS_COMPILE=~/Android_Toolchains/Android_Toolchains/arm-eabi-linaro-4.7/bin/arm-linux-gnueabihf-
-export STRIP=~/Android_Toolchains/Android_Toolchains/arm-eabi-linaro-4.7/bin/arm-linux-gnueabihf-strip
+export CROSS_COMPILE=/Volumes/HyperDroidModWorkspace/RedPill/Toolchains/toolchain-4.6.3/bin/arm-linux-androideabi-
+export STRIP=/Volumes/HyperDroidModWorkspace/RedPill/Toolchains/toolchain-4.6.3/bin/arm-linux-androideabi-strip
 
 if [ "${1}" != "" ];then
   export KERNELDIR=`readlink -f ${1}`
 fi
 
-RAMFS_TMP="/tmp/ramdisk"
+RAMFS_TMP="/Volumes/HyperDroidModWorkspace/tmp/ramdisk"
 
 if [ ! -f $KERNELDIR/.config ];
 then
