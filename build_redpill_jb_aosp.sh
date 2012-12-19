@@ -32,7 +32,7 @@ rm -rf $RAMFS_TMP
 rm -rf $RAMFS_TMP.cpio
 rm -rf $RAMFS_TMP.cpio.gz
 #copy ramfs files to tmp directory
-cp -ax $RAMFS_SOURCE $RAMFS_TMP
+cp -aX $RAMFS_SOURCE $RAMFS_TMP
 #clear git repositories in ramfs
 find $RAMFS_TMP -name .git -exec rm -rf {} \;
 #remove empty directory placeholders
