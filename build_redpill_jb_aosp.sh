@@ -46,8 +46,10 @@ find -name '*.ko' -exec cp -av {} $RAMFS_TMP/lib/modules/ \;
 $STRIP --strip-unneeded $RAMFS_TMP/lib/modules/*
 
 cd $RAMFS_TMP
-#remove mac stuff
-find $RAMFS_TMP -name .DS_Store -exec rm -f {} \;
+#remove "trash"
+#find $RAMFS_TMP -name .DS_Store -exec rm -f {} \;
+find $RAMFS_TMP -name \.DS_Store -exec rm -f {} \;
+find $RAMFS_TMP -name .gitignore -exec rm -f {} \;
 #build cpio
 find | cpio -H newc -o > $RAMFS_TMP.cpio 2>/dev/null
 ls -lh $RAMFS_TMP.cpio
