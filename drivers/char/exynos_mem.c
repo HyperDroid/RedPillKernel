@@ -23,6 +23,7 @@
 #include <plat/cpu.h>
 
 #include <linux/exynos_mem.h>
+#include <mach/cma_check.h>
 
 #define L2_FLUSH_ALL	SZ_1M
 #define L1_FLUSH_ALL	SZ_64K
@@ -256,6 +257,9 @@ int exynos_mem_mmap(struct file *filp, struct vm_area_struct *vma)
 		start = mem->phybase << PAGE_SHIFT;
 		pfn = mem->phybase;
 	}
+
+	if(check_memspace_against_cma_blocks(start, size) != 0)
+		return -EINVAL;
 
 	/* TODO: currently lowmem is only avaiable */
 	if ((phys_to_virt(start) < (void *)PAGE_OFFSET) ||

@@ -26,6 +26,7 @@
 
 #include <mach/secmem.h>
 #include <mach/dev.h>
+#include <mach/cma_check.h>
 
 #define MFC_SEC_MAGIC_CHUNK0	0x13cdbf16
 #define MFC_SEC_MAGIC_CHUNK1	0x8b803342
@@ -66,6 +67,12 @@ static bool drm_onoff = false;
 static int secmem_mmap(struct file *file, struct vm_area_struct *vma)
 {
 	unsigned long size = vma->vm_end - vma->vm_start;
+	int start = 0;
+
+	start = vma->vm_pgoff << PAGE_SHIFT;
+
+	if(check_memspace_against_cma_blocks(start, size) != 0)
+		return -EINVAL;
 
 	BUG_ON(!SECMEM_IS_PAGE_ALIGNED(vma->vm_start));
 	BUG_ON(!SECMEM_IS_PAGE_ALIGNED(vma->vm_end));
