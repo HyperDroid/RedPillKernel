@@ -1275,6 +1275,29 @@ static ssize_t command_backup_store(struct device *dev,
 
 	return (ret < 0) ? ret : count;
 }
+
+static ssize_t comm_disable_store(struct device *dev,
+	struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct mxt_data *data = dev_get_drvdata(dev);
+	struct i2c_client *client = data->client;
+	int i;
+
+	if (sscanf(buf, "%u", &i) == 1 && i < 2) {
+		data->command_off = i;
+
+		if (data->command_off)
+			disable_irq(client->irq);
+		else
+			enable_irq(client->irq);
+
+		dev_info(&client->dev, "%s\n",
+			i ? "comm disabled" : "comm enabled");
+	} else
+		dev_info(&client->dev, "debug_enabled write error\n");
+
+	return count;
+}
 #endif	/* TSP_ITDEV */
 
 static ssize_t mxt_debug_setting(struct device *dev,
@@ -1368,6 +1391,8 @@ static DEVICE_ATTR(command_reset, S_IRUGO | S_IWUSR | S_IWGRP,
 	NULL, command_reset_store);
 static DEVICE_ATTR(command_backup, S_IRUGO | S_IWUSR | S_IWGRP,
 	NULL, command_backup_store);
+static DEVICE_ATTR(command_off, S_IRUGO | S_IWUSR | S_IWGRP,
+	NULL, comm_disable_store);
 #endif
 static DEVICE_ATTR(object_show, S_IWUSR | S_IWGRP, NULL,
 	mxt_object_show);
@@ -1383,6 +1408,7 @@ static struct attribute *libmaxtouch_attributes[] = {
 	&dev_attr_command_calibrate.attr,
 	&dev_attr_command_reset.attr,
 	&dev_attr_command_backup.attr,
+	&dev_attr_command_off.attr,
 #endif
 	&dev_attr_object_show.attr,
 	&dev_attr_object_write.attr,

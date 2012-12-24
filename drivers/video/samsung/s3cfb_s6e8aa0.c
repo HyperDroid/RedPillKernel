@@ -825,7 +825,11 @@ static int init_aid_dimming_table(struct lcd_info *lcd)
 	}
 
 	for (i = 0; i < GAMMA_MAX; i++) {
+#if defined(CONFIG_LCD_REVERSE)
+		memcpy(lcd->f8[i], SEQ_REVERSE_PANEL_CONDITION_SET_500MBPS, AID_PARAM_SIZE);
+#else
 		memcpy(lcd->f8[i], SEQ_PANEL_CONDITION_SET_500MBPS, AID_PARAM_SIZE);
+#endif
 		lcd->f8[i][0x12] = aid_command_table[i][0];
 		lcd->f8[i][0x01] = aid_command_table[i][1];
 	}
@@ -943,8 +947,13 @@ static int s6e8ax0_ldi_init(struct lcd_info *lcd)
 
 	/* 4.8" HD for M0/C1*/
 	if (lcd->id[1] == 0x20 || lcd->id[1] == 0x40 || lcd->id[1] == 0x60) {
+#if defined(CONFIG_LCD_REVERSE)
+		s6e8ax0_write(lcd, SEQ_REVERSE_PANEL_CONDITION_SET_500MBPS,\
+			ARRAY_SIZE(SEQ_REVERSE_PANEL_CONDITION_SET_500MBPS));
+#else
 		s6e8ax0_write(lcd, SEQ_PANEL_CONDITION_SET_500MBPS,\
 			ARRAY_SIZE(SEQ_PANEL_CONDITION_SET_500MBPS));
+#endif
 		s6e8ax0_write(lcd, SEQ_DISPLAY_CONDITION_SET, ARRAY_SIZE(SEQ_DISPLAY_CONDITION_SET));
 		s6e8ax0_gamma_ctl(lcd);
 		s6e8ax0_write(lcd, SEQ_ETC_SOURCE_CONTROL, ARRAY_SIZE(SEQ_ETC_SOURCE_CONTROL));

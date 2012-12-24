@@ -271,6 +271,7 @@ struct mxt_data {
 	int driver_paused;
 	int debug_enabled;
 	u16 last_read_addr;
+	int command_off;
 #endif
 #if CHECK_ANTITOUCH
 	u8 check_antitouch;

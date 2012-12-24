@@ -220,8 +220,6 @@ void cfg80211_bss_expire_all(struct cfg80211_registered_device *dev)
 	struct cfg80211_internal_bss *bss, *tmp;
 	bool expired = false;
 
-    printk("%s() Enter - steven", __func__);
-
 	list_for_each_entry_safe(bss, tmp, &dev->bss_list, list) {
 		__cfg80211_unlink_bss(dev, bss);
 		expired = true;
@@ -922,8 +920,6 @@ EXPORT_SYMBOL(cfg80211_unlink_bss);
 void cfg80211_unlink_allbss(struct wiphy *wiphy)
 {
 	struct cfg80211_registered_device *dev = wiphy_to_dev(wiphy);
-
-    printk("%s() Enter - steven", __func__);
 
 	spin_lock_bh(&dev->bss_lock);
 	cfg80211_bss_expire_all(dev);

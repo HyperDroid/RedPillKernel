@@ -361,13 +361,13 @@ long isdbt_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		res = BBM_RESET(hInit);
 		break;
 	case IOCTL_ISDBT_INIT:
-		res = BBM_I2C_INIT(hInit, FCI_I2C_TYPE);
+		res = BBM_INIT(hInit);
+		res |= BBM_I2C_INIT(hInit, FCI_I2C_TYPE);
 		res |= BBM_PROBE(hInit);
 		if (res) {
 			PRINTF(hInit, "FC8150 Initialize Fail\n");
-			break;
+			/*break;*/
 		}
-		res |= BBM_INIT(hInit);
 		break;
 	case IOCTL_ISDBT_BYTE_READ:
 		err = copy_from_user((void *)&info, (void *)arg, size);
@@ -479,17 +479,17 @@ static void isdbt_ant_det_work_func(struct work_struct *work)
 	isdbt_check_ant = 0;
 
 	val = gpio_get_value_cansleep(gpio_cfg.gpio_ant_det);
-	//printk("%s: val=%d\n", __func__, val);
+	/* printk(KERN_DEBUG "%s: val=%d\n", __func__, val); */
 	if (val) {
 		input_report_key(isdbt_ant_input, KEY_DMB_ANT_DET_DOWN, 1);
 		input_report_key(isdbt_ant_input, KEY_DMB_ANT_DET_DOWN, 0);
 		input_sync(isdbt_ant_input);
-		printk("Antenna DETECT DOWN REPORT\n");
+		printk(KERN_DEBUG "Antenna DETECT DOWN REPORT\n");
 	} else {
 		input_report_key(isdbt_ant_input, KEY_DMB_ANT_DET_UP, 1);
 		input_report_key(isdbt_ant_input, KEY_DMB_ANT_DET_UP, 0);
 		input_sync(isdbt_ant_input);
-		printk("Antenna DETECT UP REPORT\n");
+		printk(KERN_DEBUG "Antenna DETECT UP REPORT\n");
 	}
 }
 
@@ -500,11 +500,11 @@ static bool isdbt_ant_det_reg_input(struct platform_device *pdev)
 	struct input_dev *input;
 	int err;
 
-	//printk("%s\n", __func__);
+	/* printk(KERN_DEBUG "%s\n", __func__); */
 
 	input = input_allocate_device();
 	if (!input) {
-		printk("Can't allocate input device\n");
+		printk(KERN_DEBUG "Can't allocate input device\n");
 		err = -ENOMEM;
 	}
 	set_bit(EV_KEY, input->evbit);
@@ -516,7 +516,7 @@ static bool isdbt_ant_det_reg_input(struct platform_device *pdev)
 
 	err = input_register_device(input);
 	if (err) {
-		printk("Can't register dmb_ant_det key: %d\n", err);
+		printk(KERN_DEBUG "Can't register dmb_ant_det key: %d\n", err);
 		goto free_input_dev;
 	}
 	isdbt_ant_input = input;
@@ -530,12 +530,12 @@ free_input_dev:
 
 static void isdbt_ant_det_unreg_input(void)
 {
-	//printk("%s\n", __func__);
+	/* printk(KERN_DEBUG "%s\n", __func__); */
 	input_unregister_device(isdbt_ant_input);
 }
 static bool isdbt_ant_det_create_wq(void)
 {
-printk("%s\n", __func__);
+	printk(KERN_DEBUG "%s\n", __func__);
 	isdbt_ant_det_wq = create_singlethread_workqueue("isdbt_ant_det_wq");
 	if (isdbt_ant_det_wq)
 		return true;
@@ -545,7 +545,7 @@ printk("%s\n", __func__);
 
 static bool isdbt_ant_det_destroy_wq(void)
 {
-	//printk("%s\n", __func__);
+	/* printk(KERN_DEBUG "%s\n", __func__); */
 	if (isdbt_ant_det_wq) {
 		flush_workqueue(isdbt_ant_det_wq);
 		destroy_workqueue(isdbt_ant_det_wq);
@@ -558,14 +558,16 @@ static irqreturn_t isdbt_ant_det_irq_handler(int irq, void *dev_id)
 {
 	int ret = 0;
 
-	//printk("%s isdbt_check_ant=%d\n", __func__, isdbt_check_ant);
+	/* printk(KERN_DEBUG "%s isdbt_check_ant=%d\n",
+		__func__, isdbt_check_ant); */
+
 	if (isdbt_check_ant)
 		return IRQ_HANDLED;
 
 	if (isdbt_ant_det_wq) {
 		ret = queue_work(isdbt_ant_det_wq, &isdbt_ant_det_work);
 		if (ret == 0)
-			printk("%s queue_work fail\n", __func__);
+			printk(KERN_DEBUG "%s queue_work fail\n", __func__);
 	}
 
 	return IRQ_HANDLED;
@@ -575,7 +577,7 @@ static bool isdbt_ant_det_irq_set(bool set)
 {
 	bool ret = true;
 	int irq_ret;
-	//printk("%s\n", __func__);
+	/* printk(KERN_DEBUG "%s\n", __func__); */
 
 	if (set) {
 		irq_set_irq_type(gpio_cfg.irq_ant_det, IRQ_TYPE_EDGE_BOTH);
@@ -585,7 +587,7 @@ static bool isdbt_ant_det_irq_set(bool set)
 						, "isdbt_ant_det"
 						, NULL);
 		if (irq_ret < 0) {
-			printk("%s %d\r\n", __func__, irq_ret);
+			printk(KERN_DEBUG "%s %d\r\n", __func__, irq_ret);
 			ret = false;
 		}
 	    enable_irq_wake(gpio_cfg.irq_ant_det);

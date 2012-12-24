@@ -51,6 +51,11 @@ int mxt_read_mem(struct mxt_data *data, u16 reg, u8 len, u8 *buf)
 		},
 	};
 
+#if TSP_ITDEV
+	if (data->command_off)
+		return 0;
+#endif
+
 	for (i = 0; i < 3 ; i++) {
 		ret = i2c_transfer(data->client->adapter, msg, 2);
 		if (ret < 0)
@@ -67,6 +72,11 @@ int mxt_write_mem(struct mxt_data *data,
 {
 	int ret = 0, i = 0;
 	u8 tmp[len + 2];
+
+#if TSP_ITDEV
+	if (data->command_off)
+		return 0;
+#endif
 
 	put_unaligned_le16(cpu_to_le16(reg), tmp);
 	memcpy(tmp + 2, buf, len);
@@ -272,8 +282,11 @@ static int mxt_read_config_crc(struct mxt_data *data, u32 *crc_pointer)
 			return error;
 
 		object_type = mxt_reportid_to_type(data, msg[0] , &instance);
-		if (object_type == RESERVED_T0)
-			return -EINVAL;
+		if (object_type == RESERVED_T0) {
+			dev_err(&data->client->dev,
+				"Untreated Object type[%d]\n", object_type);
+			continue;
+		}
 
 		if (object_type == GEN_COMMANDPROCESSOR_T6)
 			break;

@@ -63,21 +63,6 @@ int ath6kl_printk(const char *level, const char *fmt, ...)
 	return rtn;
 }
 
-char *sec_conv_mac(const u8 *mac)
-{
-	static char ret_mac[16];
-	char *p = ret_mac;
-
-	p = pack_hex_byte(p, mac[0]);
-	*p++ = '_';
-	p = pack_hex_byte(p, mac[4]);
-	*p++ = ':';
-	p = pack_hex_byte(p, mac[5]);
-	*p++ = '\0';
-
-	return ret_mac;
-}
-
 #ifdef CONFIG_ATH6KL_DEBUG
 
 #define REG_OUTPUT_LEN_PER_LINE	25
@@ -1603,6 +1588,7 @@ static ssize_t ath6kl_bgscan_int_write(struct file *file,
 		bgscan_int = 0xffff;
 
 	vif->bg_scan_period = bgscan_int;
+
 	ath6kl_wmi_scanparams_cmd(ar->wmi, 0, 0, 0, bgscan_int, 0, 0, 0, 3,
 				  vif->scan_ctrl_flag, 0, 0);
 
@@ -1674,6 +1660,7 @@ static const struct file_operations fops_listen_int = {
 	.llseek = default_llseek,
 };
 
+#if 1 // by bbelief
 static ssize_t ath6kl_mcastrate_write(struct file *file,
 				       const char __user *user_buf,
 				       size_t count, loff_t *ppos)
@@ -1728,6 +1715,8 @@ static const struct file_operations fops_mcastrate = {
 	.owner = THIS_MODULE,
 	.llseek = default_llseek,
 };
+
+#endif
 
 static ssize_t ath6kl_power_params_write(struct file *file,
 						const char __user *user_buf,
@@ -1789,6 +1778,7 @@ static const struct file_operations fops_power_params = {
 	.llseek = default_llseek,
 };
 
+#if 1 // by bbelief
 static ssize_t ath6kl_lrssi_roam_config_write(struct file *file,
 				       const char __user *user_buf,
 				       size_t count, loff_t *ppos)
@@ -1852,7 +1842,7 @@ static ssize_t ath6kl_ht_cap_write(struct file *file,
 {
 	struct ath6kl *ar = file->private_data;
 	struct ath6kl_vif *vif;
-	struct wmi_set_ht_cap_cmd ht_cap;
+	struct wmi_set_htcap_cmd ht_cap;
 	char buf[32];
 	ssize_t len;
 	char *sptr, *token;
@@ -1877,31 +1867,31 @@ static ssize_t ath6kl_ht_cap_write(struct file *file,
 	token = strsep(&sptr, " ");
 	if (!token)
 		return -EINVAL;
-	if (kstrtou8(token, 0, &ht_cap.enable))
+	if (kstrtou8(token, 0, &ht_cap.ht_enable))
 		return -EINVAL;
 
 	token = strsep(&sptr, " ");
 	if (!token)
 		return -EINVAL;
-	if (kstrtou8(token, 0, &ht_cap.chan_width_40m_supported))
+	if (kstrtou8(token, 0, &ht_cap.ht40_supported))
 		return -EINVAL;
 
 	token = strsep(&sptr, " ");
 	if (!token)
 		return -EINVAL;
-	if (kstrtou8(token, 0, &ht_cap.short_gi_20mhz))
+	if (kstrtou8(token, 0, &ht_cap.ht20_sgi))
 		return -EINVAL;
 
 	token = strsep(&sptr, " ");
 	if (!token)
 		return -EINVAL;
-	if (kstrtou8(token, 0, &ht_cap.short_gi_40mhz))
+	if (kstrtou8(token, 0, &ht_cap.ht40_sgi))
 		return -EINVAL;
 
 	token = strsep(&sptr, " ");
 	if (!token)
 		return -EINVAL;
-	if (kstrtou8(token, 0, &ht_cap.intolerance_40mhz))
+	if (kstrtou8(token, 0, &ht_cap.intolerant_40mhz))
 		return -EINVAL;
 
 	token = strsep(&sptr, " ");
@@ -1909,6 +1899,7 @@ static ssize_t ath6kl_ht_cap_write(struct file *file,
 		return -EINVAL;
 	if (kstrtou8(token, 0, &ht_cap.max_ampdu_len_exp))
 		return -EINVAL;
+
 
 	ath6kl_wmi_set_ht_cap_cmd(ar->wmi, vif->fw_vif_idx, &ht_cap);
 
@@ -1921,6 +1912,8 @@ static const struct file_operations fops_ht_cap = {
 	.owner = THIS_MODULE,
 	.llseek = default_llseek,
 };
+
+#endif
 
 int ath6kl_debug_init(struct ath6kl *ar)
 {
@@ -1998,17 +1991,20 @@ int ath6kl_debug_init(struct ath6kl *ar)
 	debugfs_create_file("listen_interval", S_IRUSR | S_IWUSR,
 			    ar->debugfs_phy, ar, &fops_listen_int);
 
+#if 1 // by bbelief
 	debugfs_create_file("mcast_rate", S_IRUSR | S_IWUSR,
-			    ar->debugfs_phy, ar, &fops_mcastrate);
+			ar->debugfs_phy, ar, &fops_mcastrate);
+#endif
 
 	debugfs_create_file("power_params", S_IWUSR, ar->debugfs_phy, ar,
 						&fops_power_params);
 
+#if 1 // by bbelief
 	debugfs_create_file("lrssi_roam_config", S_IRUSR, ar->debugfs_phy, ar,
-			    &fops_lrssi_roam_config);
-
+						&fops_lrssi_roam_config);
 	debugfs_create_file("ht_cap", S_IRUSR, ar->debugfs_phy, ar,
-			    &fops_ht_cap);
+						&fops_ht_cap);
+#endif
 
 	return ath6kl_init_debugfs_pri(ar);
 }

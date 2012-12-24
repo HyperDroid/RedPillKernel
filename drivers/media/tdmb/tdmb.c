@@ -49,13 +49,14 @@
 
 #include <linux/io.h>
 #include <mach/gpio.h>
+#include <linux/wakelock.h>
+#include <linux/input.h>
 
 #if defined(CONFIG_TDMB_ANT_DET)
-#include <linux/input.h>
+static struct wake_lock tdmb_ant_wlock;
 #endif
 
 #ifdef CONFIG_MACH_C1
-#include <linux/wakelock.h>
 static struct wake_lock tdmb_wlock;
 #endif
 #include "tdmb.h"
@@ -557,8 +558,10 @@ static struct input_dev *tdmb_ant_input;
 static int tdmb_check_ant;
 static int ant_prev_status;
 
-#define TDMB_ANT_CHECK_DURATION 500000
+#define TDMB_ANT_CHECK_DURATION 500000 /* us */
 #define TDMB_ANT_CHECK_COUNT 2
+#define TDMB_ANT_WLOCK_TIMEOUT \
+		((TDMB_ANT_CHECK_DURATION * TDMB_ANT_CHECK_COUNT * 2) / 1000000)
 static int tdmb_ant_det_check_value(void)
 {
 	int loop = 0;
@@ -704,6 +707,8 @@ static irqreturn_t tdmb_ant_det_irq_handler(int irq, void *dev_id)
 	if (tdmb_ant_det_ignore_irq())
 		return IRQ_HANDLED;
 
+	wake_lock_timeout(&tdmb_ant_wlock, TDMB_ANT_WLOCK_TIMEOUT * HZ);
+
 	if (tdmb_ant_det_wq) {
 		ret = queue_work(tdmb_ant_det_wq, &tdmb_ant_det_work);
 		if (ret == 0)
@@ -794,6 +799,8 @@ static int tdmb_probe(struct platform_device *pdev)
 #endif
 
 #if defined(CONFIG_TDMB_ANT_DET)
+	wake_lock_init(&tdmb_ant_wlock, WAKE_LOCK_SUSPEND, "tdmb_ant_wlock");
+
 	if (!tdmb_ant_det_reg_input(pdev))
 		goto err_reg_input;
 	if (!tdmb_ant_det_create_wq())
@@ -822,6 +829,7 @@ static int tdmb_remove(struct platform_device *pdev)
 	tdmb_ant_det_unreg_input();
 	tdmb_ant_det_destroy_wq();
 	tdmb_ant_det_irq_set(false);
+	wake_lock_destroy(&tdmb_ant_wlock);
 #endif
 	return 0;
 }

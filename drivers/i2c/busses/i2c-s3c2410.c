@@ -579,9 +579,18 @@ static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
 	dev_dbg(i2c->dev, "waiting for bus idle\n");
 
 	/* first, try busy waiting briefly */
+#ifdef CONFIG_MACH_GC1
+	iicstat = readl(i2c->regs + S3C2410_IICSTAT);
+	while ((iicstat & S3C2410_IICSTAT_START) && --spins) {
+		udelay(1000);
+		iicstat = readl(i2c->regs + S3C2410_IICSTAT);
+	}
+#else
 	do {
 		iicstat = readl(i2c->regs + S3C2410_IICSTAT);
 	} while ((iicstat & S3C2410_IICSTAT_START) && --spins);
+#endif
+
 
 	/* if that timed out sleep */
 	if (!spins) {
@@ -593,6 +602,11 @@ static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
 	spin_lock_irq(&i2c->lock);
 
 	if (iicstat & S3C2410_IICSTAT_BUSBUSY) {
+#ifdef CONFIG_MACH_GC1
+		dev_err(i2c->dev, "timeout waiting for bus idle\n");
+		dump_i2c_register(i2c);
+		ret =  -EINVAL;
+#else
 		dev_dbg(i2c->dev, "timeout waiting for bus idle\n");
 		dump_i2c_register(i2c);
 
@@ -605,6 +619,7 @@ static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
 		iicstat = readl(i2c->regs + S3C2410_IICSTAT);
 		iicstat &= ~S3C2410_IICSTAT_TXRXEN;
 		writel(iicstat, i2c->regs + S3C2410_IICSTAT);
+#endif
 	}
 	spin_unlock_irq(&i2c->lock);
 

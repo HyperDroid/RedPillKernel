@@ -17,8 +17,13 @@
 #include "core.h"
 #include "debug.h"
 
+#if 1 // by bbelief
+static bool ath6kl_parse_event_pkt_for_wake_lock(struct sk_buff *skb)
+#else
 static bool ath6kl_parse_event_pkt_for_wake_lock(struct ath6kl *ar,
-						 struct sk_buff *skb)
+					struct sk_buff *skb)
+#endif
+
 {
 	u16 cmd_id;
 	bool need_wake = false;
@@ -29,14 +34,16 @@ static bool ath6kl_parse_event_pkt_for_wake_lock(struct ath6kl *ar,
 	 cmd_id = *(const u16 *) skb->data;
 	 cmd_id = le16_to_cpu(cmd_id);
 
+#if 0 // by bbelief
 	if (test_and_clear_bit(WOW_RESUME_PRINT, &ar->flag)) {
 		if (cmd_id == WMI_CONNECT_EVENTID)
 			ath6kl_dbg(ATH6KL_DBG_SUSPEND,
-			    "(wow) WMI_CONNECT_EVENTID\n");
+				"(wow) WMI_CONNECT_EVENTID\n");
 		else
 			ath6kl_dbg(ATH6KL_DBG_SUSPEND,
-			    "(wow) wmi event id : 0x%x\n", cmd_id);
+				"(wow) wmi event id : 0x%x\n", cmd_id);
 	}
+#endif
 
 	 switch (cmd_id) {
 	 case WMI_CONNECT_EVENTID:
@@ -104,13 +111,14 @@ static bool ath6kl_parse_data_pkt_for_wake_lock(struct ath6kl *ar,
 
 	hdr = (struct ethhdr *) skb->data;
 
+#if 0 // by bbelief
 	if (test_and_clear_bit(WOW_RESUME_PRINT, &ar->flag)) {
 		ath6kl_dbg(ATH6KL_DBG_SUSPEND,
-			   "(wow) dest mac:%s, src mac:%s, type/len :%04x\n",
-			   sec_conv_mac(hdr->h_dest),
-			   sec_conv_mac(hdr->h_source),
+			   "(wow) dest mac:%pM, src mac:%pM, type/len :%04x\n",
+			   hdr->h_dest, hdr->h_source,
 			   be16_to_cpu(hdr->h_proto));
 	}
+#endif
 
 	if (!is_multicast_ether_addr(hdr->h_dest)) {
 		switch (ntohs(hdr->h_proto)) {
@@ -159,7 +167,11 @@ void ath6kl_config_suspend_wake_lock(struct ath6kl *ar, struct sk_buff *skb,
 {
 	struct ath6kl_vif *vif;
 #ifdef CONFIG_HAS_WAKELOCK
+#if 1 /* 20120927 Matt */
+	unsigned long wl_timeout = HZ;
+#else
 	unsigned long wl_timeout = 5;
+#endif /* 20120927 Matt */
 #endif
 	bool need_wake = false;
 
@@ -174,7 +186,11 @@ void ath6kl_config_suspend_wake_lock(struct ath6kl *ar, struct sk_buff *skb,
 			skb && test_bit(CONNECTED, &vif->flags)) {
 		if (is_event_pkt) { /* Ctrl pkt received */
 			need_wake =
-				ath6kl_parse_event_pkt_for_wake_lock(ar, skb);
+#if 1	// by bbelief
+				ath6kl_parse_event_pkt_for_wake_lock(skb);
+#else
+			ath6kl_parse_event_pkt_for_wake_lock(ar, skb);
+#endif
 			if (need_wake) {
 #ifdef CONFIG_HAS_WAKELOCK
 				wl_timeout = 3 * HZ;
@@ -210,7 +226,6 @@ void ath6kl_p2p_release_wakelock(struct ath6kl *ar)
 	return;
 }
 #endif
-
 #ifdef CONFIG_HAS_EARLYSUSPEND
 static void ath6kl_early_suspend(struct early_suspend *handler)
 {
