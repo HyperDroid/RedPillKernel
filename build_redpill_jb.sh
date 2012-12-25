@@ -70,6 +70,7 @@ tar cf $TAR_NAME boot.img && ls -lh $TAR_NAME
 cd $PARENT_DIR/Releases/CWM-RELEASE
 cp $KERNELDIR/boot.img .
 rm -f $ZIP_NAME
+find -name .DS_Store -exec rm -f {} \;
 zip -r $ZIP_NAME *
 cd ..
 
