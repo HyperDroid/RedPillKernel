@@ -41,7 +41,7 @@ sed -i -e 's/.*\(intother_file.*other_file<\).*/;\1/' \
        -e 's/[;][^;]*other_file[^;]*/#<#&#>#/g' \
        -e 's/#>#[^#]*//g' $tmp_file
 
-MD5=`md5 $tmp_file | cut -f1 -d\ `
+MD5=`md5sum $tmp_file | cut -f1 -d\ `
 
 rm $tmp_file
 
