@@ -1033,6 +1033,7 @@ int exynos4x12_init(struct device *dev, struct busfreq_data *data)
 		opp_disable(dev, 440293);
 		maxfreq = 440220;
 	} else {
+		opp_disable(dev, 400266);
 		/* opp_disable(dev, 267200); */
 	}
 
