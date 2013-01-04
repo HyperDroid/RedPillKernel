@@ -33,7 +33,7 @@ int waiting_wakeup_mcu(struct ssp_data *data)
 
 	iDelaycnt = 0;
 	data->wakeup_mcu();
-	while (data->check_mcu_ready() && (iDelaycnt++ < LIMIT_DELAY_CNT)
+	while (!data->check_mcu_ready() && (iDelaycnt++ < LIMIT_DELAY_CNT)
 		&& (data->bSspShutdown == false))
 		mdelay(5);
 
@@ -174,7 +174,7 @@ int ssp_resume_mode(struct ssp_data *data)
 int send_instruction(struct ssp_data *data, u8 uInst,
 	u8 uSensorType, u8 *uSendBuf, u8 uLength)
 {
-	char chTxbuf[uLength + 3];
+	char chTxbuf[uLength + 4];
 	char chRxbuf = 0;
 	int iRet = 0, iRetries = DEFAULT_RETRIES;
 
@@ -194,38 +194,39 @@ int send_instruction(struct ssp_data *data, u8 uInst,
 		return ERROR;
 
 	chTxbuf[0] = MSG2SSP_SSM;
+	chTxbuf[1] = (char)(uLength + 4);
 
 	switch (uInst) {
 	case REMOVE_SENSOR:
-		chTxbuf[1] = MSG2SSP_INST_BYPASS_SENSOR_REMOVE;
+		chTxbuf[2] = MSG2SSP_INST_BYPASS_SENSOR_REMOVE;
 		break;
 	case ADD_SENSOR:
-		chTxbuf[1] = MSG2SSP_INST_BYPASS_SENSOR_ADD;
+		chTxbuf[2] = MSG2SSP_INST_BYPASS_SENSOR_ADD;
 		break;
 	case CHANGE_DELAY:
-		chTxbuf[1] = MSG2SSP_INST_CHANGE_DELAY;
+		chTxbuf[2] = MSG2SSP_INST_CHANGE_DELAY;
 		break;
 	case GO_SLEEP:
-		chTxbuf[1] = MSG2SSP_AP_STATUS_SLEEP;
+		chTxbuf[2] = MSG2SSP_AP_STATUS_SLEEP;
 		break;
 	case FACTORY_MODE:
-		chTxbuf[1] = MSG2SSP_INST_SENSOR_SELFTEST;
+		chTxbuf[2] = MSG2SSP_INST_SENSOR_SELFTEST;
 		break;
 	case REMOVE_LIBRARY:
-		chTxbuf[1] = MSG2SSP_INST_LIBRARY_REMOVE;
+		chTxbuf[2] = MSG2SSP_INST_LIBRARY_REMOVE;
 		break;
 	case ADD_LIBRARY:
-		chTxbuf[1] = MSG2SSP_INST_LIBRARY_ADD;
+		chTxbuf[2] = MSG2SSP_INST_LIBRARY_ADD;
 		break;
 	default:
-		chTxbuf[1] = uInst;
+		chTxbuf[2] = uInst;
 		break;
 	}
 
-	chTxbuf[2] = uSensorType;
-	memcpy(&chTxbuf[3], uSendBuf, uLength);
+	chTxbuf[3] = uSensorType;
+	memcpy(&chTxbuf[4], uSendBuf, uLength);
 
-	iRet = ssp_i2c_read(data, &(chTxbuf[0]), uLength + 3, &chRxbuf, 1,
+	iRet = ssp_i2c_read(data, &(chTxbuf[0]), uLength + 4, &chRxbuf, 1,
 		DEFAULT_RETRIES);
 	if (iRet != SUCCESS) {
 		pr_err("[SSP]: %s - Instruction CMD Fail %d\n", __func__, iRet);
@@ -238,7 +239,7 @@ int send_instruction(struct ssp_data *data, u8 uInst,
 			if (waiting_wakeup_mcu(data) < 0)
 				return ERROR;
 			iRet = ssp_i2c_read(data, &(chTxbuf[0]),
-				uLength + 3, &chRxbuf, 1, DEFAULT_RETRIES);
+				uLength + 4, &chRxbuf, 1, DEFAULT_RETRIES);
 			if ((iRet == SUCCESS) && (chRxbuf == MSG_ACK))
 				break;
 		}
@@ -250,9 +251,8 @@ int send_instruction(struct ssp_data *data, u8 uInst,
 	}
 
 	data->uInstFailCnt = 0;
-	ssp_dbg("[SSP]: %s - Inst = 0x%x, Sensor Type = 0x%x, "
-		"data = %u, %u\n", __func__, chTxbuf[1], chTxbuf[2],
-		chTxbuf[3], chTxbuf[4]);
+	ssp_dbg("[SSP]: %s - Inst = 0x%x, Sensor Type = 0x%x, " "data = %u\n",
+		__func__, chTxbuf[2], chTxbuf[3], chTxbuf[4]);
 	return SUCCESS;
 }
 
