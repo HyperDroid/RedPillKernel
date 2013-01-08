@@ -487,8 +487,8 @@ static ssize_t store_mif_volt_table(struct device *device,
 			u[i] += u[i] % 50000;
 		if(u[i] < 750000)
 			u[i] = 750000;
-		if(u[i] > 1100000)
-			u[i] = 1100000;
+		if(u[i] > 1200000)
+			u[i] = 1200000;
 
 		temp_opp->u_volt = u[1];
 	} else {
@@ -502,8 +502,8 @@ static ssize_t store_mif_volt_table(struct device *device,
 					u[i] += u[i] % 50000;
 				if(u[i] < 750000)
 					u[i] = 750000;
-				if(u[i] > 1100000)
-					u[i] = 1100000;
+				if(u[i] > 1200000)
+					u[i] = 1200000;
 				
 				temp_opp->u_volt = u[i++];
 			}
@@ -554,8 +554,8 @@ static ssize_t store_int_volt_table(struct device *device,
 			u[i] += u[i] % 12500;
 		if(u[i] < 600000)
 			u[i] = 600000;
-		if(u[i] > 1100000)
-			u[i] = 1100000;
+		if(u[i] > 1300000)
+			u[i] = 1300000;
 
 		data->int_table[index] = u[1];
 	} else {
@@ -571,8 +571,8 @@ static ssize_t store_int_volt_table(struct device *device,
 					u[i] += u[i] % 12500;
 				if(u[i] < 600000)
 					u[i] = 600000;
-				if(u[i] > 1100000)
-					u[i] = 1100000;
+				if(u[i] > 1300000)
+					u[i] = 1300000;
 
 				data->int_table[index] = u[i++];
 			}
