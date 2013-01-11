@@ -150,3 +150,9 @@ Module.symvers
 /firmware/tsp_melfas/note/melfasm.fw.gen.S
 /lib/crc32table.h
 /lib/gen_crc32table
+/firmware/tsp_melfas/note/CONF.fw
+/firmware/tsp_melfas/note/CONF.fw.gen.S
+/firmware/tsp_melfas/note/melfas.fw
+/firmware/tsp_melfas/note/melfas.fw.gen.S
+/firmware/tsp_melfas/note/mms_boot.fw
+/firmware/tsp_melfas/note/mms_boot.fw.gen.S
