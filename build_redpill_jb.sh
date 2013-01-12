@@ -4,8 +4,8 @@ export RAMFS_SOURCE="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N
 export PARENT_DIR="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100"
 export CLOUD_DIR="/Users/sarcastillo/Dropbox/HyperDroidNote2/RedPill"
 export USE_SEC_FIPS_MODE=true
-export CROSS_COMPILE=/Volumes/HyperDroidModWorkspace/HyperDroid/prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-
-export STRIP=/Volumes/HyperDroidModWorkspace/HyperDroid/prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-strip
+export CROSS_COMPILE=/Volumes/HyperDroidModWorkspace/HyperDroid/prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-
+export STRIP=/Volumes/HyperDroidModWorkspace/HyperDroid/prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-strip
 #export USE_CCACHE=1
 #export CCACHE_DIR=/Volumes/HyperDroidModWorkspace/tmp/.ccache
 
