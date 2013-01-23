@@ -67,8 +67,7 @@ static struct workqueue_struct  *tmu_monitor_wq;
 static DEFINE_MUTEX(tmu_lock);
 
 
-#if (defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)) \
-	&& defined(CONFIG_VIDEO_MALI400MP)
+#if (defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)) \ && defined(CONFIG_VIDEO_MALI400MP)
 #define CONFIG_TC_VOLTAGE /* Temperature compensated voltage */
 #endif
 
