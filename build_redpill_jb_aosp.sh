@@ -1,6 +1,6 @@
 #!/bin/sh
 export KERNELDIR="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100/redpill_jb_kernel_n7100"
-export RAMFS_SOURCE="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100/redpill_jb_ramfs_n7100"
+export RAMFS_SOURCE="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100/cm10_ramfs"
 export PARENT_DIR="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100"
 export CLOUD_DIR="/Users/sarcastillo/Dropbox/HyperDroidNote2/RedPill"
 export USE_SEC_FIPS_MODE=true
@@ -17,7 +17,7 @@ RAMFS_TMP="/Volumes/HyperDroidModWorkspace/tmp/ramdisk"
 
 if [ ! -f $KERNELDIR/.config ];
 then
-  make redpill_jb_n7100_defconfig_stable
+  make redpill_jb_n7100_defconfig_aosp
 fi
 
 . $KERNELDIR/.config
@@ -79,4 +79,13 @@ cp $ZIP_NAME $PARENT_DIR/Releases
 cp $ZIP_NAME $CLOUD_DIR
 rm -f $TAR_NAME
 rm -f $ZIP_NAME
+
+#Semi-Automize HyperDroid Building
+HYPERDROID="/Volumes/HyperDroidModWorkspace/HyperDroidJBX/HyperExtras"
+cd $RAMFS_TMP
+find -name '*.ko' -exec cp -av {} $HYPERDROID/system/lib/modules/ \;
+cp $KERNELDIR/boot.img $HYPERDROID
+
+#Clean Up
+cd $KERNELDIR
 rm -f $KERNELDIR/boot.img
