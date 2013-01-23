@@ -18,12 +18,19 @@
 
 #include "mali_osk.h"
 
-#define MALI_DVFS_STEPS 10
-
-#if !USING_MALI_PMM
-/* @brief System power up/down cores that can be passed into mali_platform_powerdown/up() */
-#define MALI_PLATFORM_SYSTEM  0
+#ifdef CONFIG_CPU_EXYNOS4210
+#define MALI_DVFS_STEPS 2
+#else
+#define MALI_DVFS_STEPS 5
 #endif
+
+/* @Enable or Disable Mali GPU Bottom Lock feature */
+#define MALI_GPU_BOTTOM_LOCK 1
+
+#define MALI_VOLTAGE_LOCK 1
+
+/* @Enable or Disable the CPU frequency lock when the GPU clock is 440 Mhz */
+#define CPUFREQ_LOCK_DURING_440 0
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,8 +89,6 @@ void mali_gpu_utilization_handler(u32 utilization);
 //void set_mali_parent_power_domain(void* dev);
 void mali_utilization_suspend(void);
 
-extern int mali_gpu_utilization_timeout;
-
 #ifdef CONFIG_REGULATOR
 int mali_regulator_get_usecount(void);
 void mali_regulator_disable(void);
@@ -120,7 +125,24 @@ int mali_dvfs_is_running(void);
 void mali_dvfs_late_resume(void);
 int get_mali_dvfs_control_status(void);
 mali_bool set_mali_dvfs_current_step(unsigned int step);
+void mali_default_step_set(int step, mali_bool boostup);
 int change_dvfs_tableset(int change_clk, int change_step);
+#ifdef CONFIG_CPU_EXYNOS4210
+#if MALI_GPU_BOTTOM_LOCK
+int mali_dvfs_bottom_lock_push(void);
+int mali_dvfs_bottom_lock_pop(void);
+#endif
+#else
+int mali_dvfs_bottom_lock_push(int lock_step);
+int mali_dvfs_bottom_lock_pop(void);
+#endif
+#endif
+
+#if MALI_VOLTAGE_LOCK
+int mali_voltage_lock_push(int lock_vol);
+int mali_voltage_lock_pop(void);
+int mali_voltage_lock_init(void);
+int mali_vol_get_from_table(int vol);
 #endif
 
 #ifdef __cplusplus
