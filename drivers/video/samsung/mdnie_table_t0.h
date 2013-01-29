@@ -701,13 +701,13 @@ struct mdnie_tunning_info etc_table[CABC_MAX][OUTDOOR_MAX][TONE_MAX] = {
 	{
 		{
 			{"NORMAL",		NULL},
-			{"WARM",		tune_warm},
-			{"COLD",		tune_cold},
+			{"WARM",		(unsigned short *)&tune_warm},
+			{"COLD",		(unsigned short *)&tune_cold},
 		},
 		{
-			{"NORMAL_OUTDOOR",	tune_normal_outdoor},
-			{"WARM_OUTDOOR",	tune_warm_outdoor},
-			{"COLD_OUTDOOR",	tune_cold_outdoor},
+			{"NORMAL_OUTDOOR",	(unsigned short *)&tune_normal_outdoor},
+			{"WARM_OUTDOOR",	(unsigned short *)&tune_warm_outdoor},
+			{"COLD_OUTDOOR",	(unsigned short *)&tune_cold_outdoor},
 		},
 	}
 };
