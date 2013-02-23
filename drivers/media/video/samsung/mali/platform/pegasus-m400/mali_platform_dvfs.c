@@ -330,12 +330,10 @@ static mali_bool set_mali_dvfs_status(u32 step,mali_bool boostup)
 	}
 
 #ifdef EXYNOS4_ASV_ENABLED
-	if (samsung_rev() < EXYNOS4412_REV_2_0) {
-		if (mali_dvfs[step].clock == 160)
-			exynos4x12_set_abb_member(ABB_G3D, ABB_MODE_100V);
-		else
-			exynos4x12_set_abb_member(ABB_G3D, ABB_MODE_130V);
-	}
+	if (mali_dvfs[step].clock == 160)
+		exynos4x12_set_abb_member(ABB_G3D, ABB_MODE_100V);
+	else
+		exynos4x12_set_abb_member(ABB_G3D, ABB_MODE_130V);
 #endif
 
 
@@ -815,6 +813,14 @@ int mali_dvfs_bottom_lock_pop(void)
 	}
 
 	return _mali_osk_atomic_dec_return(&bottomlock_status);
+}
+
+int mali_dvfs_get_vol(int step)
+{
+	step = step % MAX_MALI_DVFS_STEPS;
+	MALI_DEBUG_ASSERT(step<MAX_MALI_DVFS_STEPS);
+
+	return mali_dvfs[step].vol;
 }
 
 #if MALI_VOLTAGE_LOCK
