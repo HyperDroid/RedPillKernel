@@ -515,8 +515,8 @@ static struct s3cfb_lcd ea8061 = {
 	.name = "ea8061",
 	.height = 1280,
 	.width = 720,
-	.p_width = 69,
-	.p_height = 123,
+	.p_width = 74,
+	.p_height = 131,
 	.bpp = 24,
 	.freq = 58,
 
@@ -556,8 +556,8 @@ static struct s3cfb_lcd s6evr02 = {
 	.name = "s6evr02",
 	.height = 1280,
 	.width = 720,
-	.p_width = 69,
-	.p_height = 123,
+	.p_width = 74,
+	.p_height = 131,
 	.bpp = 24,
 	.freq = 58,
 	.freq_limit = 41,
@@ -595,8 +595,8 @@ static struct s3cfb_lcd ea8061 = {
 	.name = "ea8061",
 	.height = 1280,
 	.width = 720,
-	.p_width = 69,
-	.p_height = 123,
+	.p_width = 64,
+	.p_height = 106,
 	.bpp = 24,
 	.freq = 58,
 
@@ -734,15 +734,15 @@ static struct s3cfb_lcd s6d6aa1 = {
 	},
 
 	.timing = {
-		.h_fp = 60,
-		.h_bp = 60,
+		.h_fp = 50,
+		.h_bp = 15,
 		.h_sw = 3,
-		.v_fp = 13,
+		.v_fp = 3,
 		.v_fpe = 1,
-		.v_bp = 25,
+		.v_bp = 2,
 		.v_bpe = 1,
 		.v_sw = 2,
-		.cmd_allow_len = 7,	 /* v_fp=stable_vfp + cmd_allow_len+ mask_len*/
+		.cmd_allow_len = 11,	 /* v_fp=stable_vfp + cmd_allow_len */
 		.stable_vfp = 2,
 	},
 
