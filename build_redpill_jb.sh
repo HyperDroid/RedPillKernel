@@ -1,11 +1,12 @@
 #!/bin/sh
-export KERNELDIR="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100/redpill_jb_kernel_n7100"
-export RAMFS_SOURCE="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100/redpill_jb_ramfs_n7100"
-export PARENT_DIR="/Volumes/HyperDroidModWorkspace/RedPill/RedPill_JB_Kernel_N7100"
-export CLOUD_DIR="/Users/sarcastillo/Dropbox/HyperDroidNote2/RedPill"
+export KERNELDIR=~/RedPill/RedPillKernel
+export RAMFS_SOURCE=~/RedPill/Ramdisk/redpill_jb_ramfs_n7100/
+export PARENT_DIR=~/RedPill
+export DB_UP=~/Dropbox-Uploader/
+export CLOUD_DIR=/HyperDroidNote2/RedPill/
 export USE_SEC_FIPS_MODE=true
-export CROSS_COMPILE=/Volumes/HyperDroidModWorkspace/HyperDroid/prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-
-export STRIP=/Volumes/HyperDroidModWorkspace/HyperDroid/prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-strip
+export CROSS_COMPILE=~/RedPill/Toolchain/Linaro/bin/arm-linux-gnueabihf-
+export STRIP=~/RedPill/Toolchain/Linaro/bin/arm-linux-gnueabihf-strip
 #export USE_CCACHE=1
 #export CCACHE_DIR=/Volumes/HyperDroidModWorkspace/tmp/.ccache
 
@@ -13,7 +14,7 @@ if [ "${1}" != "" ];then
   export KERNELDIR=`readlink -f ${1}`
 fi
 
-RAMFS_TMP="/Volumes/HyperDroidModWorkspace/tmp/ramdisk"
+RAMFS_TMP=$PARENT_DIR/tmp/ramdisk
 
 if [ ! -f $KERNELDIR/.config ];
 then
@@ -24,15 +25,15 @@ fi
 
 export ARCH=arm
 
-cd $KERNELDIR/
-nice -n 10 make -j4 || exit 1
+cd $KERNELDIR
+nice -n 10 make -j12 || exit 1
 
 #remove previous ramfs files
 rm -rf $RAMFS_TMP
 rm -rf $RAMFS_TMP.cpio
 rm -rf $RAMFS_TMP.cpio.gz
 #copy ramfs files to tmp directory
-cp -aX $RAMFS_SOURCE $RAMFS_TMP
+cp -ax $RAMFS_SOURCE $RAMFS_TMP
 #clear git repositories in ramfs
 find $RAMFS_TMP -name .git -exec rm -rf {} \;
 #remove empty directory placeholders
@@ -56,7 +57,7 @@ ls -lh $RAMFS_TMP.cpio
 gzip -9 $RAMFS_TMP.cpio
 cd -
 
-nice -n 10 make -j4 zImage || exit 1
+nice -n 10 make -j12 zImage || exit 1
 
 ./mkbootimg --kernel $KERNELDIR/arch/arm/boot/zImage --ramdisk $RAMFS_TMP.cpio.gz --board smdk4x12 --base 0x10000000 --pagesize 2048 --ramdiskaddr 0x11000000 -o ./boot.img
 
@@ -76,7 +77,18 @@ cd ..
 
 cp $TAR_NAME $PARENT_DIR/Releases
 cp $ZIP_NAME $PARENT_DIR/Releases
-cp $ZIP_NAME $CLOUD_DIR
+cd $DB_UP
+./dropbox_uploader.sh upload $PARENT_DIR/Releases/$ZIP_NAME $CLOUD_DIR/$ZIP_NAME
+cd $PARENT_DIR/Releases/
 rm -f $TAR_NAME
 rm -f $ZIP_NAME
+
+#Semi-Automize HyperDroid Building
+#HYPERDROID=~/HyperDroidJBX/HyperExtras
+#cd $RAMFS_TMP
+#find -name '*.ko' -exec cp -av {} $HYPERDROID/system/lib/modules/ \;
+#cp $KERNELDIR/boot.img $HYPERDROID
+
+#Clean Up
+cd $KERNELDIR
 rm -f $KERNELDIR/boot.img
