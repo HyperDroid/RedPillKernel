@@ -119,7 +119,7 @@ struct mdnie_info {
 
 extern struct mdnie_info *g_mdnie;
 
-int mdnie_send_sequence(struct mdnie_info *mdnie, const unsigned short *seq);
+int mdnie_send_sequence(struct mdnie_info *mdnie, unsigned short *seq);
 #if defined(CONFIG_FB_MDNIE_PWM)
 extern void set_mdnie_pwm_value(struct mdnie_info *mdnie, int value);
 #endif
