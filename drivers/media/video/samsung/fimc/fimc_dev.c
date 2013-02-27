@@ -525,6 +525,7 @@ static inline void fimc_irq_cap(struct fimc_control *ctrl)
 	int buf_index;
 	int framecnt_seq;
 	int available_bufnum;
+	static int is_frame_end_irq;
 	struct v4l2_control is_ctrl;
 	u32 is_fn;
 
@@ -547,10 +548,9 @@ static inline void fimc_irq_cap(struct fimc_control *ctrl)
 	}
 
 	if (pdata->hw_ver >= 0x51) {
-		if (ctrl->is_frame_end_irq ||
-			ctrl->status == FIMC_BUFFER_STOP) {
+		if (is_frame_end_irq || ctrl->status == FIMC_BUFFER_STOP) {
 			pp = fimc_hwget_present_frame_count(ctrl);
-			ctrl->is_frame_end_irq = 0;
+			is_frame_end_irq = 0;
 		} else {
 			pp = fimc_hwget_before_frame_count(ctrl);
 		}
@@ -566,7 +566,7 @@ static inline void fimc_irq_cap(struct fimc_control *ctrl)
 			printk(KERN_INFO "%s[%d] SKIPPED\n", __func__, pp);
 			if (ctrl->cap->nr_bufs == 1) {
 				fimc_stop_capture(ctrl);
-				ctrl->is_frame_end_irq = 1;
+				is_frame_end_irq = 1;
 				ctrl->status = FIMC_BUFFER_STOP;
 			}
 			ctrl->restart = false;
@@ -626,23 +626,18 @@ static inline void fimc_irq_cap(struct fimc_control *ctrl)
 		}
 
 		fimc_add_outgoing_queue(ctrl, buf_index);
-		spin_lock(&ctrl->inq_lock);
-
 		fimc_hwset_output_buf_sequence(ctrl, buf_index,
 				FIMC_FRAMECNT_SEQ_DISABLE);
 
 		framecnt_seq = fimc_hwget_output_buf_sequence(ctrl);
 		available_bufnum = fimc_hwget_number_of_bits(framecnt_seq);
-
-		spin_unlock(&ctrl->inq_lock);
-
 		fimc_info2("%s[%d] : framecnt_seq: %d, available_bufnum: %d\n",
 			__func__, ctrl->id, framecnt_seq, available_bufnum);
 		if (ctrl->status != FIMC_BUFFER_STOP) {
 			if (available_bufnum == 1) {
 				ctrl->cap->lastirq = 0;
 				fimc_stop_capture(ctrl);
-				ctrl->is_frame_end_irq = 1;
+				is_frame_end_irq = 1;
 
 				printk(KERN_INFO "fimc_irq_cap available_bufnum = %d\n", available_bufnum);
 				ctrl->status = FIMC_BUFFER_STOP;
@@ -782,8 +777,6 @@ static struct fimc_control *fimc_register_controller(struct platform_device *pde
 	mutex_init(&ctrl->lock);
 	mutex_init(&ctrl->v4l2_lock);
 	spin_lock_init(&ctrl->outq_lock);
-	spin_lock_init(&ctrl->inq_lock);
-
 	init_waitqueue_head(&ctrl->wq);
 
 	/* get resource for io memory */
@@ -1166,7 +1159,7 @@ static int _fill_v4l2_buffer(struct vb2_buffer *vb, struct v4l2_buffer *b,
 		b->m.fd = vb->v4l2_planes[0].m.fd;
 	}
 
-	return 0;
+	return ret;
 }
 
 static int _fill_vb2_buffer(struct vb2_buffer *vb, struct v4l2_buffer *b,
