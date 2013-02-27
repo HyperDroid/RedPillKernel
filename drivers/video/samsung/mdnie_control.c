@@ -132,12 +132,11 @@ static ssize_t store_mdnie_property(struct device *dev,
 	.regval = regval_						\
 }
 
-//TODO Fix S6E8AA0 once we have calibration data
 #if defined(CONFIG_FB_S5P_S6EVR02)
 #define _model(a, b) b
 #else 
 #if defined(CONFIG_FB_S5P_S6E8AA0)
-#define _model(a, b) b
+#define _model(a, b) a
 #endif
 #endif
 
@@ -155,15 +154,15 @@ struct mdnie_effect mdnie_controls[] = {
 	/* Master switches */
 	_effect("s_dithering"		, EFFECT_MASTER	, (1 << 11), 11	, _model( 0	, 0	)),
 	_effect("s_UC"			, EFFECT_MASTER	, (1 << 10), 10	, _model( 0	, 0	)),
-	_effect("s_ABC"			, EFFECT_MASTER	, (1 << 9), 9	, _model( 0	, 0	)),
+	_effect("s_adaptive_brightness_control"	, EFFECT_MASTER	, (1 << 9), 9	, _model( 0, 0	)),
 	_effect("s_CP"			, EFFECT_MASTER	, (1 << 8), 8	, _model( 0	, 0	)),
 
-	_effect("s_gamma_curve"		, EFFECT_MASTER	, (1 << 7), 7	, _model( 0	, 0	)),
+	_effect("s_gamma_curve"		, EFFECT_MASTER	, (1 << 7), 7	, _model( 1	, 0	)),
 	_effect("s_MCM"			, EFFECT_MASTER	, (1 << 6), 6	, _model( 0	, 0	)),
-	_effect("s_channel_filters"	, EFFECT_MASTER	, (1 << 5), 5	, _model( 0	, 1	)),
+	_effect("s_channel_filters"	, EFFECT_MASTER	, (1 << 5), 5	, _model( 1	, 1	)),
 	_effect("s_SCC"			, EFFECT_MASTER	, (1 << 4), 4	, _model( 0	, 0	)),
 
-	_effect("s_chroma_saturation"	, EFFECT_MASTER	, (1 << 3), 3	, _model( 0	, 1	)),
+	_effect("s_chroma_saturation"	, EFFECT_MASTER	, (1 << 3), 3	, _model( 1	, 1	)),
 	_effect("s_edge_enhancement"	, EFFECT_MASTER	, (1 << 2), 2	, _model( 0	, 0	)),
 	_effect("s_digital_noise_reduction", EFFECT_MASTER, (1 << 1), 1	, _model( 0	, 0	)),
 	_effect("s_high_dynamic_range"	, EFFECT_MASTER	, (1 << 0), 0	, _model( 0	, 0	)),
@@ -196,53 +195,53 @@ struct mdnie_effect mdnie_controls[] = {
 	_effect("de_negative_f"		, DE_NF		, (0x00ff), 0	, 96	),
 	_effect("de_negative_b"		, DE_NB		, (0x00ff), 0	, 96	),
 
-	_effect("de_min_ratio"		, DE_MIN_RATIO	, (0xffff), 0	, 4096	),
-	_effect("de_max_ratio"		, DE_MAX_RATIO	, (0xffff), 0	, 256	),
+	_effect("de_min_ratio"		, DE_MIN_RATIO	, (0xffff), 0	, 256	),
+	_effect("de_max_ratio"		, DE_MAX_RATIO	, (0xffff), 0	, 4096	),
 
 	/* Chroma saturation */
 	_effect("cs_weight"		, CS_WEIGHT_GRTH, (0xff00), 8	, 24	),
 	_effect("cs_gray_threshold"	, CS_WEIGHT_GRTH, (0x00ff), 0	, 4	),
 
-	_effect("cs_red"		, CS_HG_RY	, (0xff00), 8	, _model( 16	, 5	)),
-	_effect("cs_green"		, CS_HG_GC	, (0xff00), 8	, _model( 16	, 6	)),
-	_effect("cs_blue"		, CS_HG_BM	, (0xff00), 8	, _model( 16	, 8	)),
+	_effect("cs_red"		, CS_HG_RY	, (0xff00), 8	, _model( 6	, 5	)),
+	_effect("cs_green"		, CS_HG_GC	, (0xff00), 8	, _model( 7	, 6	)),
+	_effect("cs_blue"		, CS_HG_BM	, (0xff00), 8	, _model( 6	, 8	)),
 
-	_effect("cs_yellow"		, CS_HG_RY	, (0x00ff), 0	, _model( 16	, 18	)),
-	_effect("cs_cyan"		, CS_HG_GC	, (0x00ff), 0	, _model( 16	, 22	)),
-	_effect("cs_magenta"		, CS_HG_BM	, (0x00ff), 0	, _model( 16	, 6	)),
+	_effect("cs_yellow"		, CS_HG_RY	, (0x00ff), 0	, _model( 9	, 18	)),
+	_effect("cs_cyan"		, CS_HG_GC	, (0x00ff), 0	, _model( 4	, 22	)),
+	_effect("cs_magenta"		, CS_HG_BM	, (0x00ff), 0	, _model( 8	, 6	)),
 	
 	/* Colour channel pass-through filters */
-	_effect("scr_red_red"		, SCR_RR_CR	, (0xff00), 8	, _model( 255	, 239	)),
-	_effect("scr_red_green"		, SCR_RG_CG	, (0xff00), 8	, _model( 0	, 18	)),
+	_effect("scr_red_red"		, SCR_RR_CR	, (0xff00), 8	, _model( 237	, 239	)),
+	_effect("scr_red_green"		, SCR_RG_CG	, (0xff00), 8	, _model( 15	, 18	)),
 	_effect("scr_red_blue"		, SCR_RB_CB	, (0xff00), 8	, _model( 0	, 0	)),
 
-	_effect("scr_cyan_red"		, SCR_RR_CR	, (0x00ff), 0	, _model( 0	, 159	)),
-	_effect("scr_cyan_green"	, SCR_RG_CG	, (0x00ff), 0	, _model( 255	, 246	)),
+	_effect("scr_cyan_red"		, SCR_RR_CR	, (0x00ff), 0	, _model( 68	, 159	)),
+	_effect("scr_cyan_green"	, SCR_RG_CG	, (0x00ff), 0	, _model( 245	, 246	)),
 	_effect("scr_cyan_blue"		, SCR_RB_CB	, (0x00ff), 0	, _model( 255	, 255	)),
 	
-	_effect("scr_green_red"		, SCR_GR_MR	, (0xff00), 8	, _model( 0	, 95	)),
-	_effect("scr_green_green"	, SCR_GG_MG	, (0xff00), 8	, _model( 255	, 223	)),
-	_effect("scr_green_blue"	, SCR_GB_MB	, (0xff00), 8	, _model( 0	, 15	)),
+	_effect("scr_green_red"		, SCR_GR_MR	, (0xff00), 8	, _model( 97	, 95	)),
+	_effect("scr_green_green"	, SCR_GG_MG	, (0xff00), 8	, _model( 230	, 223	)),
+	_effect("scr_green_blue"	, SCR_GB_MB	, (0xff00), 8	, _model( 18	, 15	)),
 
-	_effect("scr_magenta_red"	, SCR_GR_MR	, (0x00ff), 0	, _model( 255	, 255	)),
-	_effect("scr_magenta_green"	, SCR_GG_MG	, (0x00ff), 0	, _model( 0	, 28	)),
+	_effect("scr_magenta_red"	, SCR_GR_MR	, (0x00ff), 0	, _model( 251	, 255	)),
+	_effect("scr_magenta_green"	, SCR_GG_MG	, (0x00ff), 0	, _model( 36	, 28	)),
 	_effect("scr_magenta_blue"	, SCR_GB_MB	, (0x00ff), 0	, _model( 255	, 255	)),
 	
 	_effect("scr_blue_red"		, SCR_BR_YR	, (0xff00), 8	, _model( 0	, 18	)),
-	_effect("scr_blue_green"	, SCR_BG_YG	, (0xff00), 8	, _model( 0	, 0	)),
+	_effect("scr_blue_green"	, SCR_BG_YG	, (0xff00), 8	, _model( 43	, 0	)),
 	_effect("scr_blue_blue"		, SCR_BB_YB	, (0xff00), 8	, _model( 255	, 246	)),
 
 	_effect("scr_yellow_red"	, SCR_BR_YR	, (0x00ff), 0	, _model( 255	, 255	)),
-	_effect("scr_yellow_green"	, SCR_BG_YG	, (0x00ff), 0	, _model( 255	, 239	)),
-	_effect("scr_yellow_blue"	, SCR_BB_YB	, (0x00ff), 0	, _model( 0	, 90	)),
+	_effect("scr_yellow_green"	, SCR_BG_YG	, (0x00ff), 0	, _model( 239	, 239	)),
+	_effect("scr_yellow_blue"	, SCR_BB_YB	, (0x00ff), 0	, _model( 27	, 90	)),
 
 	_effect("scr_black_red"		, SCR_KR_WR	, (0xff00), 8	, _model( 0	, 0	)),
 	_effect("scr_black_green"	, SCR_KG_WG	, (0xff00), 8	, _model( 0	, 0	)),
 	_effect("scr_black_blue"	, SCR_KB_WB	, (0xff00), 8	, _model( 0	, 0	)),
 
 	_effect("scr_white_red"		, SCR_KR_WR	, (0x00ff), 0	, _model( 255	, 255	)),
-	_effect("scr_white_green"	, SCR_KG_WG	, (0x00ff), 0	, _model( 255	, 236	)),
-	_effect("scr_white_blue"	, SCR_KB_WB	, (0x00ff), 0	, _model( 255	, 243	)),
+	_effect("scr_white_green"	, SCR_KG_WG	, (0x00ff), 0	, _model( 240	, 236	)),
+	_effect("scr_white_blue"	, SCR_KB_WB	, (0x00ff), 0	, _model( 240	, 243	)),
 
 	/* MCM */
 	_effect("mcm_temperature"	, MCM_TEMPERATURE, (0x00ff), 0	, 100	),
@@ -261,23 +260,23 @@ struct mdnie_effect mdnie_controls[] = {
 	_effect("cc_channel_selection"	, CC_CHSEL_STR	, (0xff00), 8	, 0	),
 	_effect("cc_channel_strength"	, CC_CHSEL_STR	, (0x00ff), 0	, 128	),
 	
-	_effect("cc_0"			, CC_0		, (0x00ff), 0	, 0	),
-	_effect("cc_16"			, CC_1		, (0xff00), 8	, 16	),
-	_effect("cc_32"			, CC_2		, (0xff00), 8	, 32	),
-	_effect("cc_48"			, CC_3		, (0xff00), 8	, 48	),
-	_effect("cc_64"			, CC_4		, (0xff00), 8	, 64	),
-	_effect("cc_80"			, CC_5		, (0xff00), 8	, 80	),
-	_effect("cc_96"			, CC_6		, (0xff00), 8	, 96	),
-	_effect("cc_112"		, CC_7		, (0xff00), 8	, 112	),
-	_effect("cc_128"		, CC_8		, (0xff00), 8	, 128	),
-	_effect("cc_144"		, CC_1		, (0x00ff), 0	, 144	),
-	_effect("cc_160"		, CC_2		, (0x00ff), 0	, 160	),
-	_effect("cc_176"		, CC_3		, (0x00ff), 0	, 176	),
-	_effect("cc_192"		, CC_4		, (0x00ff), 0	, 192	),
-	_effect("cc_208"		, CC_5		, (0x00ff), 0	, 208	),
-	_effect("cc_224"		, CC_6		, (0x00ff), 0	, 224	),
-	_effect("cc_240"		, CC_7		, (0x00ff), 0	, 240	),
-	_effect("cc_255"		, CC_8		, (0x00ff), 0	, 255	),
+	_effect("cc_0"			, CC_0		, (0x00ff), 0	, _model( 0	, 0	)),
+	_effect("cc_16"			, CC_1		, (0xff00), 8	, _model( 16	, 16	)),
+	_effect("cc_32"			, CC_2		, (0xff00), 8	, _model( 32	, 32	)),
+	_effect("cc_48"			, CC_3		, (0xff00), 8	, _model( 47	, 48	)),
+	_effect("cc_64"			, CC_4		, (0xff00), 8	, _model( 64	, 64	)),
+	_effect("cc_80"			, CC_5		, (0xff00), 8	, _model( 77	, 80	)),
+	_effect("cc_96"			, CC_6		, (0xff00), 8	, _model( 94	, 96	)),
+	_effect("cc_112"		, CC_7		, (0xff00), 8	, _model( 112	, 112	)),
+	_effect("cc_128"		, CC_8		, (0xff00), 8	, _model( 126	, 128	)),
+	_effect("cc_144"		, CC_1		, (0x00ff), 0	, _model( 143	, 144	)),
+	_effect("cc_160"		, CC_2		, (0x00ff), 0	, _model( 159	, 160	)),
+	_effect("cc_176"		, CC_3		, (0x00ff), 0	, _model( 173	, 176	)),
+	_effect("cc_192"		, CC_4		, (0x00ff), 0	, _model( 190	, 192	)),
+	_effect("cc_208"		, CC_5		, (0x00ff), 0	, _model( 206	, 208	)),
+	_effect("cc_224"		, CC_6		, (0x00ff), 0	, _model( 225	, 224	)),
+	_effect("cc_240"		, CC_7		, (0x00ff), 0	, _model( 240	, 240	)),
+	_effect("cc_255"		, CC_8		, (0x00ff), 0	, _model( 255	, 255	)),
 };
 
 static int is_switch(unsigned int reg)
