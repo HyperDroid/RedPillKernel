@@ -244,7 +244,7 @@ struct mdnie_effect mdnie_controls[] = {
 	_effect("scr_white_blue"	, SCR_KB_WB	, (0x00ff), 0	, _model( 240	, 243	)),
 
 	/* MCM */
-	_effect("mcm_temperature"	, MCM_TEMPERATURE, (0x00ff), 0	, 100	),
+	_effect("mcm_temperature"	, MCM_TEMPERATURE, (0x00ff), 0	, 65	),
 
 	_effect("mcm_9_left"		, MCM_9		, (0xff00), 8	, 160	),
 	_effect("mcm_9_right"		, MCM_9		, (0x00ff), 0	, 139	),
@@ -408,7 +408,7 @@ unsigned short mdnie_reg_hook(unsigned short reg, unsigned short value)
 
 	original = value;
 
-	if(!scenario_hook && !reg_hook)
+	if(!scenario_hook && !reg_hook || mdnie->negative == NEGATIVE_ON)
 		return value;
 
 	for(i = 0; i < ARRAY_SIZE(mdnie_controls); i++) {
@@ -464,7 +464,7 @@ unsigned short *mdnie_sequence_hook(struct mdnie_info *pmdnie, unsigned short *s
 	if(mdnie == NULL)
 		mdnie = pmdnie;
 
-	if(!scenario_hook)
+	if(!scenario_hook || mdnie->negative == NEGATIVE_ON)
 		return seq;
 
 	return (unsigned short *)&master_sequence;
