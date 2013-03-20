@@ -11,8 +11,8 @@
 
 static inline int read_into(int *container, int size, const char *buf, size_t count)
 {
-	int i, j, t;
-	i=0; j=0; t=0;
+	int i, j, t, n;
+	i=0; j=0; t=0; n=0;
 
 	for(j = 0; j < size; j++)
 		*(container + j) = 0;
@@ -27,10 +27,21 @@ static inline int read_into(int *container, int size, const char *buf, size_t co
 			*(container + j) *= 10;
 			*(container + j) += (c - '0');
 		} else if(c == ' ' || c == '\t' || c == '\n' ) {
-			if(*(container + j) != 0) j++;
+			if(*(container + j) != 0) {
+				if(n) {
+					*(container + j) *= -1;
+					n = 0;
+				}
+				j++;
+			}
+		} else if(c == '-') {
+			n = 1;
 		} else
 			break;
 	}
+
+	if(n)
+		*(container + j) *= -1;
 
 	return t;
 }
