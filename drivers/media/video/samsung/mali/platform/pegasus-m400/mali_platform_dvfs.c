@@ -82,8 +82,8 @@ struct mali_policy_config{
 	unsigned int upThreshold;
 	unsigned int downDifferential;
 }mali_policy = {
-	.upThreshold = 90,
-	.downDifferential = 10,
+	.upThreshold = 75,
+	.downDifferential = 17,
 };
 
 
@@ -182,8 +182,6 @@ static mali_bool set_mali_dvfs_status(u32 step,mali_bool boostup)
 #endif
 
 	set_mali_dvfs_current_step(validatedStep);
-	/*for future use*/
-	mali_policy.currentStep = validatedStep;
 
 	return MALI_TRUE;
 }
@@ -203,7 +201,7 @@ static mali_bool change_mali_dvfs_status(u32 step, mali_bool boostup )
 	while(1) {
 		read_val = _mali_osk_mem_ioread32(clk_register_map, 0x00);
 		if ((read_val & 0x8000)==0x0000) break;
-			_mali_osk_time_ubusydelay(25);
+			_mali_osk_time_ubusydelay(100);
 	}
 
 	return MALI_TRUE;
@@ -220,11 +218,11 @@ static mali_bool mali_dvfs_table_update(void)
 		MALI_PRINT((":::exynos_result_of_asv : %d\n", exynos_result_of_asv));
 
 		mali_dvfs[i].vol = asv_3d_volt_9_table[i-3][exynos_result_of_asv];
-/*
+
 		if (samsung_rev() >= EXYNOS4412_REV_2_0 && ((is_special_flag() >> G3D_LOCK_FLAG) & 0x1)) {
 			mali_dvfs[i].vol += 25000;
 		}
-*/
+
 		MALI_PRINT(("mali_dvfs[%d].vol = %d\n", i, mali_dvfs[i].vol));
 	}
 
