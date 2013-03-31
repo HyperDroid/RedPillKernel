@@ -77,14 +77,14 @@ cd ..
 
 cp $TAR_NAME $PARENT_DIR/Releases
 cp $ZIP_NAME $PARENT_DIR/Releases
-cd $DB_UP
-sh dropbox_uploader.sh upload $PARENT_DIR/Releases/$ZIP_NAME $CLOUD_DIR/$ZIP_NAME
+#cd $DB_UP
+#sh dropbox_uploader.sh upload $PARENT_DIR/Releases/$ZIP_NAME $CLOUD_DIR/$ZIP_NAME
 cd $PARENT_DIR/Releases/
 rm -f $TAR_NAME
 rm -f $ZIP_NAME
 
 #Semi-Automize HyperDroid Building
-HYPERDROID=~/HyperDroidJBX/HyperExtras
+HYPERDROID=~/HyperDroidExtras/HyperExtras
 cd $RAMFS_TMP
 find -name '*.ko' -exec cp -av {} $HYPERDROID/system/lib/modules/ \;
 cp $KERNELDIR/boot.img $HYPERDROID
