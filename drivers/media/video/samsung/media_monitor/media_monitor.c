@@ -28,14 +28,20 @@ struct mhs_context {
 	.camera_stream = false,
 };
 
+//TODO Replace this with a proper notifier chain in the future
+extern void set_mic_level(void);
+extern void do_mdnie_refresh(struct work_struct *work);
+
 void mhs_set_status(enum mhs_type type, bool status)
 {
 	printk("MHS: type:%d status:%d\n", type, status);
 	switch (type) {
 		case MHS_ENCODING:	mhs_ctx.encoding = status; break;
 		case MHS_DECODING:	mhs_ctx.decoding = status;
+					do_mdnie_refresh(NULL); //TODO see above
 					break;
 		case MHS_CAMERA_STREAM:	mhs_ctx.camera_stream = status;
+					set_mic_level(); //TODO see above
 					break;
 		default:		return;
 	}
