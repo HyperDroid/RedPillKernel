@@ -32,6 +32,10 @@
 
 #include "fimc.h"
 
+#ifdef CONFIG_EXYNOS_MEDIA_MONITOR
+#include <mach/media_monitor.h>
+#endif
+
 static struct pm_qos_request_list bus_qos_pm_qos_req;
 
 static const struct v4l2_fmtdesc capture_fmts[] = {
@@ -2930,6 +2934,10 @@ int fimc_streamon_capture(void *fh)
 	fimc_start_capture(ctrl);
 	ctrl->status = FIMC_STREAMON;
 
+#ifdef CONFIG_EXYNOS_MEDIA_MONITOR
+	mhs_set_status(MHS_CAMERA_STREAM, true);
+#endif
+
 	if (ctrl->is.sd && fimc_cam_use)
 		ret = v4l2_subdev_call(ctrl->is.sd, video, s_stream, 1);
 	printk(KERN_INFO "%s-- fimc%d\n", __func__, ctrl->id);
@@ -2960,6 +2968,10 @@ int fimc_streamoff_capture(void *fh)
 	}
 
 	ctrl->status = FIMC_READY_OFF;
+
+#ifdef CONFIG_EXYNOS_MEDIA_MONITOR
+	mhs_set_status(MHS_CAMERA_STREAM, false);
+#endif
 
 	fimc_stop_capture(ctrl);
 #ifdef CONFIG_VIDEO_IMPROVE_STREAMOFF
