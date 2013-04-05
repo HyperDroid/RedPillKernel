@@ -20,6 +20,8 @@
 #include "s3cfb.h"
 #include "s3cfb_mdnie.h"
 
+#include <mach/media_monitor.h>
+
 #define REFRESH_DELAY		HZ / 2
 struct delayed_work mdnie_refresh_work;
 
@@ -421,13 +423,17 @@ unsigned short mdnie_reg_hook(unsigned short reg, unsigned short value)
 
 		if(reg_hook) {
 			if(is_switch(reg)) {
+				/* Multi-scenario effect switches; DE, HDR, DNR */
 				if(reg == EFFECT_MASTER && effect->shift < 3) {
-					if((1 << mdnie->scenario) & effect->value) {
+					/* Enabled if video mask active and decoding
+					 * or UI mask active and not decoding */
+					if( ((effect->value & 2) &&  mhs_get_status(MHS_DECODING)) || 
+					    ((effect->value & 1) && !mhs_get_status(MHS_DECODING)) )
+					{
 						tmp = effect->value ? !regval : regval;
 					}
-				} else {
+				} else
 					tmp = effect->value ? !regval : regval;
-				}
 			} else {
 				if(effect->delta) {
 					tmp += effect->value;
@@ -470,7 +476,8 @@ unsigned short *mdnie_sequence_hook(struct mdnie_info *pmdnie, unsigned short *s
 	return (unsigned short *)&master_sequence;
 }
 
-static void do_mdnie_refresh(struct work_struct *work)
+//FIXME static // replace with notifier calls in future
+void do_mdnie_refresh(struct work_struct *work)
 {
 	set_mdnie_value(g_mdnie, 1);
 }
