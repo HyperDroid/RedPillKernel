@@ -139,7 +139,7 @@ static unsigned int clkdiv_cpu0_4412[CPUFREQ_LEVEL_END][8] = {
 	{ 0, 4, 7, 0, 7, 1, 7, 0 },
 
 	/* ARM L3: 1700Mhz */
-	{ 0, 4, 7, 0, 7, 1, 7, 0 },
+	{ 0, 4, 7, 0, 6, 1, 7, 0 },
 
 	/* ARM L4: 1600Mhz */
 	{ 0, 4, 7, 0, 6, 1, 7, 0 },
@@ -677,10 +677,10 @@ static void __init set_volt_table(void)
  */
 #ifdef CONFIG_SLP
 static struct dvfs_qos_info exynos4x12_dma_lat_qos[] = {
-	{ 118,	200000, L20 },
-	{ 40,	500000, L17 },
-	{ 24,	800000, L14 },
-	{ 16,	1000000, L12 },
+	{ 118,	200000, L18 },
+	{ 40,	500000, L15 },
+	{ 24,	800000, L12 },
+	{ 16,	1000000, L10 },
 	{},
 };
 #endif
@@ -797,7 +797,7 @@ int exynos4x12_cpufreq_init(struct exynos_dvfs_info *info)
 	 * So, pll_safe_idx set to value based on MPLL clock.(800MHz or 880MHz)
 	 */
 	if (samsung_rev() >= EXYNOS4412_REV_2_0)
-		info->pll_safe_idx = L11;
+		info->pll_safe_idx = L9;
 	else
 		info->pll_safe_idx = L12;
 
