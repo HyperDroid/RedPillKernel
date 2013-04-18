@@ -12,3 +12,7 @@
  */
 
 #define GPU_MAX_CLOCK 800
+#define GPU_MIN_CLOCK 10
+#define MALI_DVFS_STEPS 5
+
+void gpu_clock_control_start(void);

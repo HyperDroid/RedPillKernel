@@ -30,6 +30,11 @@
 #include "mali_pm.h"
 #include "mali_platform.h"
 
+#ifdef CONFIG_GPU_CLOCK_CONTROL
+#include <../common/gpu_clock_control.h>
+#include <../common/gpu_voltage_control.h>
+#endif
+
 #if ! MALI_LICENSE_IS_GPL
 #undef CONFIG_PM_RUNTIME
 #endif
@@ -224,6 +229,11 @@ int _mali_dev_platform_register(void)
 
 #ifdef CONFIG_PM_RUNTIME
 	set_mali_parent_power_domain((void *)&mali_gpu_device);
+#endif
+
+#ifdef CONFIG_GPU_CLOCK_CONTROL
+	gpu_clock_control_start();
+	gpu_voltage_control_start();
 #endif
 
 #ifdef CONFIG_PM_RUNTIME
