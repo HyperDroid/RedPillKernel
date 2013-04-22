@@ -12,8 +12,8 @@
 
 #include <linux/kernel.h>
 #include <linux/slab.h>
-#include <linux/device.h>
 #include <linux/sysfs.h>
+#include <linux/device.h>
 #include <linux/earlysuspend.h>
 
 #include "mdnie.h"
@@ -26,11 +26,18 @@
 struct delayed_work mdnie_refresh_work;
 
 bool reg_hook = 0;
-bool scenario_hook = 0;
+bool sequence_hook = 0;
 struct mdnie_info *mdnie = NULL;
 
 extern struct mdnie_info *g_mdnie;
 extern void set_mdnie_value(struct mdnie_info *mdnie, u8 force);
+
+/* Defined as negative deltas */
+static int br_reduction = 75;
+static int br_takeover_point = 30;
+static int br_brightness_delta = 20;
+
+static int br_component_reduction = 0;
 
 enum mdnie_registers {
 	EFFECT_MASTER	= 0x08,	/*Dither8 UC4 ABC2 CP1 | CC8 MCM4 SCR2 SCC1 | CS8 DE4 DNR2 HDR1*/
@@ -292,6 +299,178 @@ static int is_switch(unsigned int reg)
 	}
 }
 
+static int effect_switch_hook(struct mdnie_effect *effect, unsigned short regval)
+{
+	/* Multi-scenario effect switches; DE, HDR, DNR */
+	if(effect->reg == EFFECT_MASTER)
+		switch(effect->shift) {
+			case 0 ... 1:
+				return effect->value && mhs_get_status(MHS_DECODING);
+			case 2:
+				return ( ((effect->value & 2) &&  mhs_get_status(MHS_DECODING)) || 
+		    			 ((effect->value & 1) && !mhs_get_status(MHS_DECODING)) );
+			default: break;
+		}
+
+	return effect->value ? !regval : regval;
+}
+
+static int secondary_hook(struct mdnie_effect *effect, int val)
+{
+//	int channel;
+
+	if (likely(effect->delta))
+		val += effect->value;
+	else 
+		val = effect->value;
+
+	if (!(br_reduction))
+		return val;
+
+/*	Correct way of decreasing luminance would be to convert the RGB
+ *	coordinates into the HSL space, reducing L and going back to RGB,
+ *	however, that's pretty outlandish in the current design of things where
+ *	channel values are modified independently on a per-register basis.
+ *
+ *	The effect modifiers need to be tied together to do that, otherwise
+ *	you need to do an large amount of ugly to read out the other two
+ *	channels outside of the current context (SCR effect).
+ *
+ *	Luma is L = 0.299R + 0.587G + 0.114B, but you can't use those
+ *	weights to independently to reduce luminance because you're
+ *	discarding H and S and it'll give you an ugly blue-red-ish hue.
+ *
+ *	For now, we simply reduce the components of RGB independently,
+ *	it reduces brightness but it is no longer colour accurate.
+ *	For all practical purposes though, it is good enough for the intent
+ *	of this feature.
+ *
+ *	channel = (effect->reg - SCR_RR_CR) % CI_MAX;
+ */
+
+	if (effect->reg >= SCR_RR_CR && effect->reg <= SCR_KB_WB)
+		val -= br_component_reduction;
+
+	return val;
+}
+
+unsigned short mdnie_reg_hook(unsigned short reg, unsigned short value)
+{
+	struct mdnie_effect *effect = (struct mdnie_effect*)&mdnie_controls;
+	int i;
+	int tmp, original;
+	unsigned short regval;
+
+	original = value;
+
+	if(unlikely(!sequence_hook && !reg_hook || mdnie->negative == NEGATIVE_ON))
+		return value;
+
+	for(i = 0; i < ARRAY_SIZE(mdnie_controls); i++) {
+	    if(unlikely(effect->reg == reg)) {
+		if(likely(sequence_hook)) {
+			tmp = regval = effect->regval;
+		} else {
+			tmp = regval = (value & effect->mask) >> effect->shift;
+		}
+
+		if(likely(reg_hook)) {
+			if (is_switch(reg))
+				tmp = effect_switch_hook(effect, regval);
+			else
+				tmp = secondary_hook(effect, tmp);
+
+			if(tmp > (effect->mask >> effect->shift))
+				tmp = (effect->mask >> effect->shift);
+
+			if(tmp < 0)
+				tmp = 0;
+
+			regval = (unsigned short)tmp;
+		}
+
+		value &= ~effect->mask;
+		value |= regval << effect->shift;
+/*
+		printk("mdnie: hook on: 0x%X val: 0x%X -> 0x%X effect:%4d\n",
+			reg, original, value, tmp);
+*/
+	    }
+	    ++effect;
+	}
+	
+	return value;
+}
+
+unsigned short *mdnie_sequence_hook(struct mdnie_info *pmdnie, unsigned short *seq)
+{
+	if(mdnie == NULL)
+		mdnie = pmdnie;
+
+	if(!sequence_hook || mdnie->negative == NEGATIVE_ON)
+		return seq;
+
+	return (unsigned short *)&master_sequence;
+}
+
+//FIXME static // replace with notifier calls in future
+void do_mdnie_refresh(struct work_struct *work)
+{
+	set_mdnie_value(g_mdnie, 1);
+}
+
+void mdnie_update_brightness(int brightness, bool is_auto, bool force)
+{
+	static int prev_brightness = 255;
+	static int prev_auto = false;
+	int weight, adjusted_brightness;
+
+	if(unlikely(force)) {
+		brightness = prev_brightness;
+		is_auto = prev_auto;
+	}
+
+	adjusted_brightness = brightness + (is_auto ? br_brightness_delta : 0);
+
+	if(unlikely(adjusted_brightness < 1))
+		adjusted_brightness = 1;
+
+	if(adjusted_brightness > br_takeover_point) {
+		br_component_reduction = 0;
+
+		if(prev_brightness < br_takeover_point)
+			goto do_refresh;
+
+		goto update_previous;
+	}
+
+	weight = 1000 - ((adjusted_brightness * 1000) / br_takeover_point);
+
+	br_component_reduction = ((br_reduction) * weight) / 1000;
+
+do_refresh:
+	do_mdnie_refresh(NULL);
+
+update_previous:
+	prev_brightness = brightness;
+	prev_auto = is_auto;
+
+	return;
+}
+
+static inline void scheduled_refresh(void)
+{
+	cancel_delayed_work_sync(&mdnie_refresh_work);
+	schedule_delayed_work_on(0, &mdnie_refresh_work, REFRESH_DELAY);
+}
+
+static inline void forced_brightness(void)
+{ 
+	mdnie_update_brightness(0, false, true);
+}
+
+/**** Sysfs ****/
+
 static ssize_t show_mdnie_property(struct device *dev,
 				    struct device_attribute *attr, char *buf)
 {
@@ -350,151 +529,44 @@ static ssize_t store_mdnie_property(struct device *dev,
 	}
 
 refresh:
-	cancel_delayed_work_sync(&mdnie_refresh_work);
-	schedule_delayed_work_on(0, &mdnie_refresh_work, REFRESH_DELAY);
+	scheduled_refresh();
 
 	return count;
 };
 
-static ssize_t show_reg_hook(struct device *dev,
-				    struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d", reg_hook);
+#define MAIN_CONTROL(_name, _var, _callback) \
+static ssize_t show_##_name(struct device *dev,					\
+				    struct device_attribute *attr, char *buf)	\
+{										\
+	return sprintf(buf, "%d", _var);					\
+};										\
+static ssize_t store_##_name(struct device *dev,				\
+				     struct device_attribute *attr,		\
+				     const char *buf, size_t count)		\
+{										\
+	int val;								\
+										\
+	if(sscanf(buf, "%d", &val) != 1)					\
+		return -EINVAL;							\
+										\
+	_var = val;								\
+										\
+	_callback();								\
+										\
+	return count;								\
 };
 
-static ssize_t store_reg_hook(struct device *dev,
-				     struct device_attribute *attr,
-				     const char *buf, size_t count)
-{
-	int val;
-	
-	if(sscanf(buf, "%d", &val) != 1)
-		return -EINVAL;
+MAIN_CONTROL(reg_hook, reg_hook, scheduled_refresh);
+MAIN_CONTROL(sequence_intercept, sequence_hook, scheduled_refresh);
+MAIN_CONTROL(br_reduction, br_reduction, forced_brightness);
+MAIN_CONTROL(br_takeover_point, br_takeover_point, forced_brightness);
+MAIN_CONTROL(br_brightness_delta, br_brightness_delta, forced_brightness);
 
-	reg_hook = !!val;
-
-	cancel_delayed_work_sync(&mdnie_refresh_work);
-	schedule_delayed_work_on(0, &mdnie_refresh_work, REFRESH_DELAY);
-
-	return count;
-};
-static ssize_t show_sequence_hook(struct device *dev,
-				    struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d", scenario_hook);
-};
-
-static ssize_t store_sequence_hook(struct device *dev,
-				     struct device_attribute *attr,
-				     const char *buf, size_t count)
-{
-	int val;
-	
-	if(sscanf(buf, "%d", &val) != 1)
-		return -EINVAL;
-
-	scenario_hook = !!val;
-
-	cancel_delayed_work_sync(&mdnie_refresh_work);
-	schedule_delayed_work_on(0, &mdnie_refresh_work, REFRESH_DELAY);
-
-	return count;
-};
-
-unsigned short mdnie_reg_hook(unsigned short reg, unsigned short value)
-{
-	struct mdnie_effect *effect = (struct mdnie_effect*)&mdnie_controls;
-	int i;
-	int tmp, original;
-	unsigned short regval;
-
-	original = value;
-
-	if(!scenario_hook && !reg_hook || mdnie->negative == NEGATIVE_ON)
-		return value;
-
-	for(i = 0; i < ARRAY_SIZE(mdnie_controls); i++) {
-	    if(effect->reg == reg) {
-		if(scenario_hook) {
-			tmp = regval = effect->regval;
-		} else {
-			tmp = regval = (value & effect->mask) >> effect->shift;
-		}
-
-		if(reg_hook) {
-			if(is_switch(reg)) {
-				/* Multi-scenario effect switches; DE, HDR, DNR */
-				if(reg == EFFECT_MASTER && effect->shift < 3) {
-					/* Enabled if video mask active and decoding
-					 * or UI mask active and not decoding */
-					if( ((effect->value & 2) &&  mhs_get_status(MHS_DECODING)) || 
-					    ((effect->value & 1) && !mhs_get_status(MHS_DECODING)) )
-					{
-						tmp = effect->value ? !regval : regval;
-					}
-				} else
-					tmp = effect->value ? !regval : regval;
-			} else {
-				if(effect->delta) {
-					tmp += effect->value;
-				} else {
-					tmp = effect->value;
-				}
-			}
-
-			if(tmp > (effect->mask >> effect->shift))
-				tmp = (effect->mask >> effect->shift);
-
-			if(tmp < 0)
-				tmp = 0;
-
-			regval = (unsigned short)tmp;
-		}
-
-		value &= ~effect->mask;
-		value |= regval << effect->shift;
-
-/*
-		printk("mdnie: hook on: 0x%X val: 0x%X -> 0x%X effect:%4d\n",
-			reg, original, value, tmp);
-*/
-	    }
-	    ++effect;
-	}
-	
-	return value;
-}
-
-unsigned short *mdnie_sequence_hook(struct mdnie_info *pmdnie, unsigned short *seq)
-{
-	if(mdnie == NULL)
-		mdnie = pmdnie;
-
-	if(!scenario_hook || mdnie->negative == NEGATIVE_ON)
-		return seq;
-
-	return (unsigned short *)&master_sequence;
-}
-
-//FIXME static // replace with notifier calls in future
-void do_mdnie_refresh(struct work_struct *work)
-{
-	set_mdnie_value(g_mdnie, 1);
-}
-
-const struct device_attribute master_switch_attr[] = {
-	{ 
-		.attr = { .name = "hook_intercept",
-			  .mode = S_IRUGO | S_IWUSR | S_IWGRP, },
-		.show = show_reg_hook,
-		.store = store_reg_hook,
-	},{
-		.attr = { .name = "sequence_intercept",
-			  .mode = S_IRUGO | S_IWUSR | S_IWGRP, },
-		.show = show_sequence_hook,
-		.store = store_sequence_hook,
-	},
-};
+DEVICE_ATTR(hook_intercept, S_IRUGO | S_IWUSR | S_IWGRP, show_reg_hook, store_reg_hook);
+DEVICE_ATTR(sequence_intercept, S_IRUGO | S_IWUSR | S_IWGRP, show_sequence_intercept, store_sequence_intercept);
+DEVICE_ATTR(brightness_reduction, S_IRUGO | S_IWUSR | S_IWGRP, show_br_reduction, store_br_reduction);
+DEVICE_ATTR(brightness_takeover_point, S_IRUGO | S_IWUSR | S_IWGRP, show_br_takeover_point, store_br_takeover_point);
+DEVICE_ATTR(brightness_input_delta, S_IRUGO | S_IWUSR | S_IWGRP, show_br_brightness_delta, store_br_brightness_delta);
 
 void init_intercept_control(struct kobject *kobj)
 {
@@ -507,8 +579,11 @@ void init_intercept_control(struct kobject *kobj)
 		ret = sysfs_create_file(subdir, &mdnie_controls[i].attribute.attr);
 	}
 
-	ret = sysfs_create_file(kobj, &master_switch_attr[0].attr);
-	ret = sysfs_create_file(kobj, &master_switch_attr[1].attr);
+	ret = sysfs_create_file(kobj, &dev_attr_hook_intercept.attr);
+	ret = sysfs_create_file(kobj, &dev_attr_sequence_intercept.attr);
+	ret = sysfs_create_file(kobj, &dev_attr_brightness_reduction.attr);
+	ret = sysfs_create_file(kobj, &dev_attr_brightness_takeover_point.attr);
+	ret = sysfs_create_file(kobj, &dev_attr_brightness_input_delta.attr);
 
 	INIT_DELAYED_WORK(&mdnie_refresh_work, do_mdnie_refresh);
 }
